@@ -1,12 +1,13 @@
 
 /* =========================================================
-   LIBERTY MOTORS
-   WEBSITE ENGINE
+   LIBERTY MOTORS — WEBSITE ENGINE
+   GitHub Pages project-site compatible
    ========================================================= */
 
 (function () {
   "use strict";
 
+  const BASE_PATH = "/LIBERTY-MOTORS/";
   const DATA = window.LIBERTY_DATA;
 
   if (!DATA) {
@@ -18,10 +19,61 @@
   const header = document.getElementById("site-header");
   const footer = document.getElementById("site-footer");
 
-  if (!app) return;
+  if (!app) {
+    console.error("Liberty Motors: #app was not found.");
+    return;
+  }
 
+  /* =========================================================
+     URL MANAGEMENT
+     ========================================================= */
 
-  /* ---------- 1. HELPER FUNCTIONS ---------- */
+  function siteUrl(path) {
+    let clean = String(path || "").trim();
+
+    if (clean.startsWith(BASE_PATH)) {
+      clean = clean.slice(BASE_PATH.length);
+    }
+
+    clean = clean.replace(/^\/+/, "");
+
+    return BASE_PATH + clean;
+  }
+
+  function normalisePath(path) {
+    let clean = String(path || "");
+
+    clean = clean.split("?")[0].split("#")[0];
+    clean = clean.replace(/\/+/g, "/");
+
+    if (clean.startsWith(BASE_PATH)) {
+      clean = clean.slice(BASE_PATH.length);
+    }
+
+    clean = clean.replace(/^\/+|\/+$/g, "");
+
+    return clean.toLowerCase();
+  }
+
+  let savedRoute = "";
+
+  try {
+    savedRoute = sessionStorage.getItem("liberty_redirect") || "";
+
+    if (savedRoute) {
+      sessionStorage.removeItem("liberty_redirect");
+    }
+  } catch (error) {
+    console.warn("Liberty Motors: session storage unavailable.");
+  }
+
+  let currentPath = savedRoute
+    ? normalisePath(savedRoute)
+    : normalisePath(window.location.pathname);
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
 
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, function (char) {
@@ -35,247 +87,220 @@
     });
   }
 
-  function formatText(value) {
-    return escapeHTML(value || "");
-  }
-
-  function normalisePath(path) {
-    let result = path.split("?")[0].split("#")[0];
-    result = result.replace(/\/+/g, "/");
-
-    if (result.length > 1) {
-      result = result.replace(/\/$/, "");
+  function formatPrice(price) {
+    if (price === undefined || price === null || price === "") {
+      return "Contact for price";
     }
 
-    return result.toLowerCase();
+    if (typeof price === "number") {
+      return "$" + price.toLocaleString("en-US");
+    }
+
+    return escapeHTML(price);
+  }
+
+  function getItemName(item) {
+    return item.title || item.name || "Untitled listing";
+  }
+
+  function getSlug(item) {
+    if (item.slug) return item.slug;
+
+    return getItemName(item)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
   }
 
   function getImage(item) {
-    return item.image || "assets/images/hero-car.jpg";
+    return item.image ||
+      (item.images && item.images.length ? item.images[0] : "") ||
+      "assets/images/vehicle-placeholder.jpg";
   }
 
-  function getPrice(item) {
-    return item.price || "Contact for price";
+  function getEnquiryEmail(type) {
+    return DATA.getEmailForCategory
+      ? DATA.getEmailForCategory(type)
+      : DATA.emails.general;
   }
 
-  function getEnquiryEmail(category) {
-    return DATA.getEmailForCategory(category);
-  }
-
-  function getEnquiryLink(item, category) {
-    const email = getEnquiryEmail(category);
-
-    const subject = "Enquiry: " + item.name;
-
-    const body =
-      "Hello Liberty Motors,\n\n" +
-      "I am interested in: " + item.name + "\n\n" +
-      "Please provide more information.\n\n" +
-      "Thank you.";
-
-    return (
-      "https://mail.google.com/mail/?view=cm&fs=1" +
-      "&to=" + encodeURIComponent(email) +
-      "&su=" + encodeURIComponent(subject) +
-      "&body=" + encodeURIComponent(body)
+  function getEnquiryLink(item, type) {
+    const email = getEnquiryEmail(type);
+    const subject = encodeURIComponent(
+      "Enquiry about " + getItemName(item)
     );
+
+    const body = encodeURIComponent(
+      "Hello Liberty Motors,\n\nI am interested in " +
+      getItemName(item) +
+      ". Please provide more information.\n\nThank you."
+    );
+
+    return "mailto:" + email + "?subject=" + subject + "&body=" + body;
   }
 
-  function buttonLink(url, text, style) {
-    return `
-      <a href="${escapeHTML(url)}" class="${style || "btn btn-primary"}">
-        ${escapeHTML(text)}
-      </a>
-    `;
+  function getTypeLabel(type) {
+    const labels = {
+      cars: "Vehicle",
+      parts: "Part",
+      services: "Service"
+    };
+
+    return labels[type] || "Listing";
   }
 
+  function getArray(type) {
+    return Array.isArray(DATA[type]) ? DATA[type] : [];
+  }
 
-  /* ---------- 2. NAVIGATION HEADER ---------- */
+  /* =========================================================
+     HEADER
+     ========================================================= */
 
   function renderHeader() {
     if (!header) return;
 
     const navigation = DATA.navigation || [];
 
-    header.innerHTML = `
-      <div class="site-header">
-        <div class="header-inner">
+    function renderNavItem(item) {
+      const children = item.children || [];
 
-          <a href="/" class="logo">
-            <img
-              src="${escapeHTML(DATA.business.logo)}"
-              alt="${escapeHTML(DATA.business.name)} logo"
-              onerror="this.style.display='none'"
-            >
-            <span>${escapeHTML(DATA.business.name)}</span>
+      if (!children.length) {
+        return `
+          <a href="${siteUrl(item.url)}">
+            ${escapeHTML(item.label)}
+          </a>
+        `;
+      }
+
+      return `
+        <div class="nav-dropdown">
+          <a href="${siteUrl(item.url)}">
+            ${escapeHTML(item.label)}
           </a>
 
-          <nav class="nav-links" aria-label="Main navigation">
-            ${navigation.map(item => `
-              <div class="nav-item">
-                <a href="${escapeHTML(item.url)}">
-                  ${escapeHTML(item.label)}
-                </a>
-
-                ${item.children ? `
-                  <div class="nav-dropdown">
-                    ${item.children.map(child => `
-                      <a href="${escapeHTML(child.url)}">
-                        ${escapeHTML(child.label)}
-                      </a>
-                    `).join("")}
-                  </div>
-                ` : ""}
-              </div>
-            `).join("")}
-          </nav>
-
-          <div class="nav-actions">
-            <a href="/contact" class="btn btn-primary">
-              Enquire Now
-            </a>
-
-            <button
-              class="menu-toggle"
-              id="mobile-menu-toggle"
-              aria-label="Toggle navigation"
-              aria-expanded="false"
-            >
-              ☰
-            </button>
-          </div>
-
-        </div>
-
-        <div class="mobile-nav" id="mobile-nav">
-          ${navigation.map(item => `
-            <a href="${escapeHTML(item.url)}">
-              ${escapeHTML(item.label)}
-            </a>
-
-            ${item.children ? item.children.map(child => `
-              <a class="mobile-sub-link" href="${escapeHTML(child.url)}">
+          <div class="dropdown-menu">
+            ${children.map(child => `
+              <a href="${siteUrl(child.url)}">
                 ${escapeHTML(child.label)}
               </a>
-            `).join("") : ""}
-          `).join("")}
-
-          <a href="/contact">Enquire Now</a>
+            `).join("")}
+          </div>
         </div>
+      `;
+    }
+
+    header.innerHTML = `
+      <div class="site-header-inner">
+
+        <a class="brand" href="${siteUrl("")}">
+          <img
+            src="${escapeHTML(DATA.business.logo)}"
+            alt="${escapeHTML(DATA.business.name)}"
+          >
+          <span>${escapeHTML(DATA.business.name)}</span>
+        </a>
+
+        <nav class="main-navigation">
+          ${navigation.map(renderNavItem).join("")}
+        </nav>
+
+        <a class="header-contact" href="${siteUrl("contact")}">
+          Contact Us
+        </a>
+
       </div>
     `;
-
-    const toggle = document.getElementById("mobile-menu-toggle");
-    const mobileNav = document.getElementById("mobile-nav");
-
-    if (toggle && mobileNav) {
-      toggle.addEventListener("click", function () {
-        const open = mobileNav.classList.toggle("open");
-        toggle.setAttribute("aria-expanded", String(open));
-      });
-    }
   }
 
-
-  /* ---------- 3. FOOTER ---------- */
+  /* =========================================================
+     FOOTER
+     ========================================================= */
 
   function renderFooter() {
     if (!footer) return;
 
     footer.innerHTML = `
-      <footer class="site-footer">
+      <div class="footer-inner">
 
-        <div class="footer-inner">
-
-          <div class="footer-brand">
-            <h3>${escapeHTML(DATA.business.name)}</h3>
-
-            <p>${escapeHTML(DATA.business.tagline)}</p>
-
-            <p>${escapeHTML(DATA.business.description)}</p>
-          </div>
-
-          <div class="footer-column">
-            <h3>Explore</h3>
-
-            <a href="/">Home</a>
-            <a href="/cars">Cars Inventory</a>
-            <a href="/parts">Automotive Parts</a>
-            <a href="/services">Our Services</a>
-          </div>
-
-          <div class="footer-column">
-            <h3>Contact</h3>
-
-            <a href="/contact">General Enquiries</a>
-
-            <a href="${escapeHTML(
-              getEnquiryLink(
-                { name: "General Enquiry" },
-                "general"
-              )
-            )}" target="_blank" rel="noopener noreferrer">
-              Email Liberty Motors
-            </a>
-          </div>
-
+        <div class="footer-brand">
+          <h3>${escapeHTML(DATA.business.name)}</h3>
+          <p>${escapeHTML(DATA.business.tagline)}</p>
+          <p>${escapeHTML(DATA.business.description)}</p>
         </div>
 
-        <div class="footer-bottom">
-          © ${new Date().getFullYear()}
+        <div class="footer-links">
+          <h4>Explore</h4>
+          <a href="${siteUrl("")}">Home</a>
+          <a href="${siteUrl("cars")}">Vehicles</a>
+          <a href="${siteUrl("parts")}">Parts</a>
+          <a href="${siteUrl("services")}">Services</a>
+          <a href="${siteUrl("about")}">About Us</a>
+          <a href="${siteUrl("contact")}">Contact</a>
+        </div>
+
+        <div class="footer-contact">
+          <h4>Get in Touch</h4>
+          <a href="mailto:${escapeHTML(DATA.emails.general)}">
+            ${escapeHTML(DATA.emails.general)}
+          </a>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          &copy; ${new Date().getFullYear()}
           ${escapeHTML(DATA.business.name)}.
           All rights reserved.
-        </div>
-
-      </footer>
+        </p>
+      </div>
     `;
   }
 
-
-  /* ---------- 4. PRODUCT / VEHICLE CARDS ---------- */
+  /* =========================================================
+     LISTING CARDS
+     ========================================================= */
 
   function renderCard(item, type) {
-    let base = "";
-
-    if (type === "cars") base = "/cars/";
-    if (type === "parts") base = "/parts/";
-    if (type === "services") base = "/services/";
-
-    const url = base + encodeURIComponent(item.slug);
+    const slug = getSlug(item);
+    const title = getItemName(item);
+    const route = type + "/" + slug;
 
     return `
-      <article class="listing-card ${type}-card">
+      <article class="listing-card">
 
-        <a href="${url}" class="card-image">
+        <a class="listing-image" href="${siteUrl(route)}">
           <img
             src="${escapeHTML(getImage(item))}"
-            alt="${escapeHTML(item.name)}"
+            alt="${escapeHTML(title)}"
             loading="lazy"
           >
         </a>
 
-        <div class="card-content">
+        <div class="listing-content">
 
-          ${item.condition ? `
-            <span class="badge">
-              ${escapeHTML(item.condition)}
-            </span>
-          ` : ""}
+          <span class="listing-type">
+            ${getTypeLabel(type)}
+          </span>
 
           <h3>
-            <a href="${url}">
-              ${escapeHTML(item.name)}
+            <a href="${siteUrl(route)}">
+              ${escapeHTML(title)}
             </a>
           </h3>
 
-          <p>${escapeHTML(item.description || "")}</p>
+          <p class="listing-description">
+            ${escapeHTML(item.description || "")}
+          </p>
 
-          <span class="card-price">
-            ${escapeHTML(getPrice(item))}
-          </span>
+          <div class="listing-price">
+            ${formatPrice(item.price)}
+          </div>
 
-          <a href="${url}" class="card-link">
-            View Details →
+          <a class="listing-button" href="${siteUrl(route)}">
+            View Details
           </a>
 
         </div>
@@ -284,437 +309,402 @@
     `;
   }
 
-
-  /* ---------- 5. HOMEPAGE FEATURED ITEMS ---------- */
+  /* =========================================================
+     HOMEPAGE FEATURED CONTENT
+     ========================================================= */
 
   function populateFeatured() {
+    const carsContainer = document.getElementById("featured-cars");
+    const partsContainer = document.getElementById("featured-parts-grid");
+    const servicesContainer = document.getElementById("featured-services-grid");
 
-    const featuredCars = DATA.cars
-      .filter(item => item.featured)
-      .slice(0, 3);
+    function populate(container, items, type) {
+      if (!container) return;
 
-    const featuredParts = DATA.parts
-      .filter(item => item.featured)
-      .slice(0, 3);
+      const featured = items
+        .filter(item => item.is_featured !== false)
+        .slice(0, 3);
 
-    const featuredServices = DATA.services
-      .filter(item => item.featured)
-      .slice(0, 3);
-
-    const carGrid = document.getElementById("featured-cars");
-    const partsGrid = document.getElementById("featured-parts-grid");
-    const servicesGrid = document.getElementById("featured-services-grid");
-
-    if (carGrid) {
-      carGrid.innerHTML = featuredCars.length
-        ? featuredCars.map(item => renderCard(item, "cars")).join("")
-        : emptyState("No featured vehicles available yet.");
+      container.innerHTML = featured.length
+        ? featured.map(item => renderCard(item, type)).join("")
+        : `<p class="empty-message">New ${type} listings coming soon.</p>`;
     }
 
-    if (partsGrid) {
-      partsGrid.innerHTML = featuredParts.length
-        ? featuredParts.map(item => renderCard(item, "parts")).join("")
-        : emptyState("No featured parts available yet.");
-    }
-
-    if (servicesGrid) {
-      servicesGrid.innerHTML = featuredServices.length
-        ? featuredServices.map(item => renderCard(item, "services")).join("")
-        : emptyState("No featured services available yet.");
-    }
+    populate(carsContainer, getArray("cars"), "cars");
+    populate(partsContainer, getArray("parts"), "parts");
+    populate(servicesContainer, getArray("services"), "services");
   }
 
+  /* =========================================================
+     PAGE LAYOUT
+     ========================================================= */
 
-  /* ---------- 6. EMPTY STATE ---------- */
-
-  function emptyState(message) {
-    return `
-      <div class="empty-state">
-        <h3>Coming Soon</h3>
-        <p>${escapeHTML(message)}</p>
-      </div>
-    `;
-  }
-
-
-  /* ---------- 7. PAGE HERO ---------- */
-
-  function pageHero(title, description) {
-    return `
-      <section class="page-hero">
-        <div class="container">
-          <span class="eyebrow">Liberty Motors</span>
+  function pageLayout(title, description, content) {
+    app.innerHTML = `
+      <section class="page-heading">
+        <div class="page-heading-inner">
           <h1>${escapeHTML(title)}</h1>
-          <p>${escapeHTML(description)}</p>
+          <p>${escapeHTML(description || "")}</p>
         </div>
+      </section>
+
+      <section class="page-content">
+        ${content}
       </section>
     `;
   }
 
+  /* =========================================================
+     CATEGORY PAGES
+     ========================================================= */
 
-  /* ---------- 8. CATEGORY PAGE ---------- */
+  function renderCategoryPage(type, title, description, filter) {
+    let items = getArray(type);
 
-  function renderCategoryPage(title, description, items, type) {
+    if (filter) {
+      items = items.filter(filter);
+    }
 
-    const cards = items.length
-      ? items.map(item => renderCard(item, type)).join("")
-      : emptyState("Please check back for new listings.");
+    items = items.filter(item => item.is_published !== false);
 
-    app.innerHTML = `
-      ${pageHero(title, description)}
-
-      <section class="inventory-section">
-        <div class="container">
-
-          <div class="breadcrumbs">
-            <a href="/">Home</a>
-            <span>/</span>
-            ${escapeHTML(title)}
-          </div>
-
-          <div class="section-heading">
-            <h2>${escapeHTML(title)}</h2>
-            <p>${items.length} listing(s) currently displayed.</p>
-          </div>
-
-          <div class="listing-grid">
-            ${cards}
-          </div>
-
+    const content = items.length
+      ? `
+        <div class="listing-grid">
+          ${items.map(item => renderCard(item, type)).join("")}
         </div>
-      </section>
-    `;
+      `
+      : `
+        <div class="empty-state">
+          <h2>Coming Soon</h2>
+          <p>
+            We are preparing our ${escapeHTML(title.toLowerCase())}
+            collection. Please check back soon.
+          </p>
+          <a class="listing-button" href="${siteUrl("contact")}">
+            Contact Us
+          </a>
+        </div>
+      `;
+
+    pageLayout(title, description, content);
   }
 
+  /* =========================================================
+     LISTING DETAIL PAGES
+     ========================================================= */
 
-  /* ---------- 9. INDIVIDUAL LISTING PAGE ---------- */
+  function findListing(path) {
+    const segments = path.split("/");
 
-  function renderDetailPage(item, type) {
+    if (segments.length !== 2) return null;
 
-    const category =
-      type === "cars" ? "cars" :
-      type === "parts" ? "parts" : "services";
+    const type = segments[0];
+    const slug = segments[1];
 
-    const emailLink = getEnquiryLink(item, category);
+    if (!["cars", "parts", "services"].includes(type)) {
+      return null;
+    }
 
-    const specifications = item.specifications
-      ? Object.entries(item.specifications).map(([key, value]) => `
-          <div>
-            <strong>${escapeHTML(key)}</strong>
-            <span>${escapeHTML(value)}</span>
-          </div>
-        `).join("")
-      : "";
-
-    const gallery = item.gallery && item.gallery.length
-      ? item.gallery.map(image => `
-          <img src="${escapeHTML(image)}"
-               alt="${escapeHTML(item.name)}"
-               loading="lazy">
-        `).join("")
-      : "";
-
-    app.innerHTML = `
-      ${pageHero(item.name, item.description || "")}
-
-      <section class="detail-page">
-        <div class="container">
-
-          <div class="breadcrumbs">
-            <a href="/">Home</a>
-            <span>/</span>
-            <a href="/${type}">${escapeHTML(type)}</a>
-            <span>/</span>
-            ${escapeHTML(item.name)}
-          </div>
-
-          <div class="detail-layout">
-
-            <div class="detail-gallery">
-
-              <img
-                src="${escapeHTML(getImage(item))}"
-                alt="${escapeHTML(item.name)}"
-              >
-
-              ${gallery ? `
-                <div class="gallery-thumbnails">
-                  ${gallery}
-                </div>
-              ` : ""}
-
-            </div>
-
-            <div class="detail-info">
-
-              <span class="eyebrow">
-                ${escapeHTML(type)}
-              </span>
-
-              <h1>${escapeHTML(item.name)}</h1>
-
-              <div class="card-price">
-                ${escapeHTML(getPrice(item))}
-              </div>
-
-              <p class="detail-description">
-                ${escapeHTML(item.description || "")}
-              </p>
-
-              ${item.availability ? `
-                <p>
-                  <strong>Availability:</strong>
-                  ${escapeHTML(item.availability)}
-                </p>
-              ` : ""}
-
-              ${item.condition ? `
-                <p>
-                  <strong>Condition:</strong>
-                  ${escapeHTML(item.condition)}
-                </p>
-              ` : ""}
-
-              ${specifications ? `
-                <div class="specifications">
-                  ${specifications}
-                </div>
-              ` : ""}
-
-              <a
-                href="${escapeHTML(emailLink)}"
-                class="btn btn-primary"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Enquire About This Item
-              </a>
-
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-    `;
-  }
-
-
-  /* ---------- 10. CONTACT PAGE ---------- */
-
-  function renderContactPage() {
-    const email = getEnquiryEmail("general");
-
-    const link = getEnquiryLink(
-      { name: "General Enquiry" },
-      "general"
+    const item = getArray(type).find(entry =>
+      getSlug(entry).toLowerCase() === slug
     );
 
-    app.innerHTML = `
-      ${pageHero(
-        "Contact Liberty Motors",
-        "Our team is ready to assist with your automotive enquiries."
-      )}
+    return item ? { item, type } : null;
+  }
 
-      <section class="contact-section">
-        <div class="container">
+  function renderDetailPage(item, type) {
+    const title = getItemName(item);
+    const images = item.images && item.images.length
+      ? item.images
+      : [getImage(item)];
 
-          <div class="contact-card">
+    const specifications = item.specifications || {};
 
-            <h2>Get in Touch</h2>
+    const specificationHTML = Object.keys(specifications).length
+      ? `
+        <div class="detail-specifications">
+          <h2>Specifications</h2>
+          <div class="specification-grid">
+            ${Object.entries(specifications).map(([key, value]) => `
+              <div class="specification-item">
+                <strong>${escapeHTML(key)}</strong>
+                <span>${escapeHTML(value)}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `
+      : "";
 
-            <p>
-              For general enquiries, product information and assistance,
-              contact our team by email.
-            </p>
+    const galleryHTML = images.map(image => `
+      <img
+        src="${escapeHTML(image)}"
+        alt="${escapeHTML(title)}"
+      >
+    `).join("");
 
-            <p>
-              <strong>General enquiries:</strong><br>
-              ${escapeHTML(email)}
-            </p>
+    pageLayout(
+      title,
+      getTypeLabel(type) + " Details",
+      `
+        <div class="detail-layout">
+
+          <div class="detail-gallery">
+            ${galleryHTML}
+          </div>
+
+          <div class="detail-information">
+
+            <span class="listing-type">
+              ${getTypeLabel(type)}
+            </span>
+
+            <h2>${escapeHTML(title)}</h2>
+
+            <div class="detail-price">
+              ${formatPrice(item.price)}
+            </div>
+
+            <p>${escapeHTML(item.description || "")}</p>
+
+            ${item.year ? `<p><strong>Year:</strong> ${escapeHTML(item.year)}</p>` : ""}
+
+            ${item.mileage ? `<p><strong>Mileage:</strong> ${escapeHTML(item.mileage)}</p>` : ""}
+
+            ${item.category ? `<p><strong>Category:</strong> ${escapeHTML(item.category)}</p>` : ""}
+
+            ${item.status ? `<p><strong>Status:</strong> ${escapeHTML(item.status)}</p>` : ""}
 
             <a
-              href="${escapeHTML(link)}"
-              class="btn btn-primary"
-              target="_blank"
-              rel="noopener noreferrer"
+              class="listing-button"
+              href="${getEnquiryLink(item, type)}"
             >
-              Email Liberty Motors
+              Enquire Now
             </a>
 
           </div>
 
         </div>
-      </section>
-    `;
+
+        ${specificationHTML}
+      `
+    );
   }
 
+  /* =========================================================
+     ABOUT PAGE
+     ========================================================= */
 
-  /* ---------- 11. FIND INDIVIDUAL LISTING ---------- */
+  function renderAboutPage() {
+    pageLayout(
+      "About Liberty Motors",
+      DATA.business.tagline,
+      `
+        <div class="about-content">
+          <h2>Quality. Trust. Excellence.</h2>
 
-  function findListing(path) {
+          <p>
+            ${escapeHTML(DATA.business.description)}
+          </p>
 
-    const allItems = [
-      ...DATA.cars.map(item => ({ item, type: "cars" })),
-      ...DATA.parts.map(item => ({ item, type: "parts" })),
-      ...DATA.services.map(item => ({ item, type: "services" }))
-    ];
+          <p>
+            At Liberty Motors, our goal is to make your automotive
+            experience straightforward and dependable.
+          </p>
 
-    return allItems.find(entry => {
-      const expectedPath =
-        "/" + entry.type + "/" + entry.item.slug;
-
-      return normalisePath(expectedPath) === path;
-    });
+          <a class="listing-button" href="${siteUrl("contact")}">
+            Get in Touch
+          </a>
+        </div>
+      `
+    );
   }
 
+  /* =========================================================
+     CONTACT PAGE
+     ========================================================= */
 
-  /* ---------- 12. ROUTE HANDLER ---------- */
+  function renderContactPage() {
+    const emails = DATA.emails || {};
+
+    pageLayout(
+      "Contact Liberty Motors",
+      "We would love to hear from you.",
+      `
+        <div class="contact-grid">
+
+          <div class="contact-card">
+            <h3>General Enquiries</h3>
+            <a href="mailto:${escapeHTML(emails.general)}">
+              ${escapeHTML(emails.general)}
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <h3>Vehicle Enquiries</h3>
+            <a href="mailto:${escapeHTML(emails.cars)}">
+              ${escapeHTML(emails.cars)}
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <h3>Parts Enquiries</h3>
+            <a href="mailto:${escapeHTML(emails.parts)}">
+              ${escapeHTML(emails.parts)}
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <h3>Service Enquiries</h3>
+            <a href="mailto:${escapeHTML(emails.services)}">
+              ${escapeHTML(emails.services)}
+            </a>
+          </div>
+
+        </div>
+      `
+    );
+  }
+
+  /* =========================================================
+     ROUTING
+     ========================================================= */
 
   function renderRoute() {
+    const path = currentPath;
 
-    const path = normalisePath(window.location.pathname);
-
-    /* Homepage */
-    if (path === "/") {
+    if (!path) {
+      // Keep the original homepage HTML.
       populateFeatured();
       return;
     }
 
-    /* Contact */
-    if (path === "/contact") {
+    if (path === "cars") {
+      renderCategoryPage(
+        "cars",
+        "Our Vehicles",
+        "Explore our collection of quality vehicles."
+      );
+      return;
+    }
+
+    if (path === "cars/new") {
+      renderCategoryPage(
+        "cars",
+        "New Vehicles",
+        "Explore our new vehicle collection.",
+        item => String(item.category || "").toLowerCase() === "new"
+      );
+      return;
+    }
+
+    if (path === "cars/used") {
+      renderCategoryPage(
+        "cars",
+        "Used Vehicles",
+        "Explore our pre-owned vehicle collection.",
+        item => String(item.category || "").toLowerCase() === "used"
+      );
+      return;
+    }
+
+    if (path === "parts") {
+      renderCategoryPage(
+        "parts",
+        "Automotive Parts",
+        "Explore our automotive parts collection."
+      );
+      return;
+    }
+
+    if (path === "parts/tyres") {
+      renderCategoryPage(
+        "parts",
+        "Tyres",
+        "Explore available tyres.",
+        item => String(item.category || "").toLowerCase() === "tyres"
+      );
+      return;
+    }
+
+    if (path === "parts/vehicle-parts") {
+      renderCategoryPage(
+        "parts",
+        "Vehicle Parts",
+        "Explore our vehicle parts collection.",
+        item => String(item.category || "").toLowerCase() !== "tyres"
+      );
+      return;
+    }
+
+    if (path === "services") {
+      renderCategoryPage(
+        "services",
+        "Automotive Services",
+        "Explore our professional automotive services."
+      );
+      return;
+    }
+
+    const serviceCategories = {
+      "services/general-repairs": "General Repairs",
+      "services/tinting": "Window Tinting",
+      "services/pinstriping": "Pinstriping",
+      "services/painting": "Vehicle Painting",
+      "services/windshield-repair": "Windshield Repair"
+    };
+
+    if (serviceCategories[path]) {
+      const category = serviceCategories[path].toLowerCase();
+
+      renderCategoryPage(
+        "services",
+        serviceCategories[path],
+        "Explore our " + category + " services.",
+        item => String(item.category || "").toLowerCase() === category
+      );
+      return;
+    }
+
+    if (path === "about") {
+      renderAboutPage();
+      return;
+    }
+
+    if (path === "contact") {
       renderContactPage();
       return;
     }
 
-    /* All cars */
-    if (path === "/cars") {
-      renderCategoryPage(
-        "Cars Inventory",
-        "Explore our available new and used vehicles.",
-        DATA.cars,
-        "cars"
-      );
+    const result = findListing(path);
+
+    if (result) {
+      renderDetailPage(result.item, result.type);
       return;
     }
 
-    /* New cars */
-    if (path === "/cars/new") {
-      renderCategoryPage(
-        "New Cars",
-        "Discover our new vehicle inventory.",
-        DATA.cars.filter(item => item.category === "new"),
-        "cars"
-      );
-      return;
-    }
-
-    /* Used cars */
-    if (path === "/cars/used") {
-      renderCategoryPage(
-        "Used Cars",
-        "Explore our used vehicle inventory.",
-        DATA.cars.filter(item => item.category === "used"),
-        "cars"
-      );
-      return;
-    }
-
-    /* All parts */
-    if (path === "/parts") {
-      renderCategoryPage(
-        "Automotive Parts",
-        "Explore our automotive parts and products.",
-        DATA.parts,
-        "parts"
-      );
-      return;
-    }
-
-    /* Tyres */
-    if (path === "/parts/tyres") {
-      renderCategoryPage(
-        "Tyres",
-        "Explore our available automotive tyres.",
-        DATA.parts.filter(item => item.category === "tyres"),
-        "parts"
-      );
-      return;
-    }
-
-    /* Vehicle parts */
-    if (path === "/parts/vehicle-parts") {
-      renderCategoryPage(
-        "Vehicle Parts",
-        "Explore our automotive replacement parts.",
-        DATA.parts.filter(item => item.category === "vehicle-parts"),
-        "parts"
-      );
-      return;
-    }
-
-    /* All services */
-    if (path === "/services") {
-      renderCategoryPage(
-        "Our Services",
-        "Discover our automotive services.",
-        DATA.services,
-        "services"
-      );
-      return;
-    }
-
-    /* Individual service categories */
-    const serviceCategories = {
-      "/services/general-repairs": "general-repairs",
-      "/services/tinting": "tinting",
-      "/services/pinstriping": "pinstriping",
-      "/services/painting": "painting",
-      "/services/windshield-repair": "windshield-repair"
-    };
-
-    if (serviceCategories[path]) {
-      const category = serviceCategories[path];
-
-      renderCategoryPage(
-        category.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
-        "Explore this service at Liberty Motors.",
-        DATA.services.filter(item => item.category === category),
-        "services"
-      );
-      return;
-    }
-
-    /* Individual vehicle, part or service */
-    const listing = findListing(path);
-
-    if (listing) {
-      renderDetailPage(listing.item, listing.type);
-      return;
-    }
-
-    /* Not found */
-    app.innerHTML = `
-      ${pageHero(
-        "Page Not Found",
-        "The page you're looking for may have moved or is unavailable."
-      )}
-
-      <section class="inventory-section">
-        <div class="container" style="text-align:center">
-          <a href="/" class="btn btn-primary">Return Home</a>
+    pageLayout(
+      "Page Not Found",
+      "The page you are looking for could not be found.",
+      `
+        <div class="empty-state">
+          <a class="listing-button" href="${siteUrl("")}">
+            Return Home
+          </a>
         </div>
-      </section>
-    `;
+      `
+    );
   }
 
-
-  /* ---------- 13. INITIALISE WEBSITE ---------- */
+  /* =========================================================
+     INITIALISE WEBSITE
+     ========================================================= */
 
   renderHeader();
   renderFooter();
   renderRoute();
 
-  console.log("Liberty Motors website loaded successfully.");
+  console.log("Liberty Motors website engine loaded.");
+  console.log("Current route:", currentPath);
 
 })();
