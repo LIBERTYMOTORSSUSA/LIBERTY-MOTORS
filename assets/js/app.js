@@ -67,6 +67,14 @@
     console.warn("Liberty Motors: session storage unavailable.");
   }
 
+
+   if (savedRoute) {
+  window.history.replaceState(
+    null,
+    "",
+    siteUrl(savedRoute)
+  );
+                                }
   let currentPath = savedRoute
     ? normalisePath(savedRoute)
     : normalisePath(window.location.pathname);
