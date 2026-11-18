@@ -1,0 +1,1074 @@
+
+/* =========================================================
+   LIBERTY MOTORS — PREMIUM DEALERSHIP WEBSITE
+   Main stylesheet
+   ========================================================= */
+
+/* ---------- 1. DESIGN SYSTEM ---------- */
+
+:root {
+  --navy: #0b1420;
+  --navy-light: #142235;
+  --navy-soft: #1b2b40;
+  --gold: #c5a46d;
+  --gold-light: #dfc18b;
+  --white: #ffffff;
+  --off-white: #f6f6f3;
+  --light-grey: #e9e9e6;
+  --grey: #777e87;
+  --dark: #171d25;
+  --border: rgba(20, 34, 53, 0.12);
+
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body: "DM Sans", Arial, sans-serif;
+
+  --container: 1240px;
+  --radius: 5px;
+  --transition: 0.3s ease;
+  --shadow: 0 12px 35px rgba(10, 20, 32, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--dark);
+  background: var(--white);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+}
+
+.container,
+.page-shell {
+  width: min(92%, var(--container));
+  margin-inline: auto;
+}
+
+section {
+  position: relative;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* ---------- 2. TYPOGRAPHY ---------- */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--navy);
+}
+
+h1 {
+  font-size: clamp(2.6rem, 6vw, 5.4rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+p {
+  color: var(--grey);
+}
+
+.eyebrow,
+.section-label,
+.hero-label,
+.subtitle {
+  display: inline-block;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.section-heading {
+  max-width: 680px;
+  margin-bottom: 42px;
+}
+
+.section-heading h2 {
+  margin-bottom: 14px;
+}
+
+.section-heading p {
+  max-width: 580px;
+}
+
+/* ---------- 3. HEADER & NAVIGATION ---------- */
+
+#site-header {
+  position: relative;
+  z-index: 1000;
+}
+
+.site-header,
+.main-header,
+header {
+  position: relative;
+  z-index: 1000;
+}
+
+.site-header {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.header-inner,
+.nav-container {
+  width: min(92%, var(--container));
+  margin: auto;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.logo,
+.site-logo,
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--white);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.logo img,
+.site-logo img,
+.brand img {
+  max-height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo span,
+.site-logo span,
+.brand span {
+  color: var(--gold);
+}
+
+.nav-links,
+.main-nav,
+nav ul {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.nav-links a,
+.main-nav a,
+nav a {
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.nav-links a:hover,
+.main-nav a:hover,
+nav a:hover {
+  color: var(--gold);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.menu-toggle,
+.mobile-menu-button {
+  display: none;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: white;
+  padding: 10px 13px;
+  border-radius: var(--radius);
+}
+
+/* ---------- 4. BUTTONS ---------- */
+
+.btn,
+.button,
+.btn-primary,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  min-height: 48px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: all var(--transition);
+}
+
+.btn-primary,
+.button-primary,
+.btn-gold {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.btn-primary:hover,
+.button-primary:hover,
+.btn-gold:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  color: var(--white);
+  border-color: rgba(255,255,255,.55);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: var(--white);
+  color: var(--navy);
+}
+
+.btn-dark {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.btn-dark:hover {
+  background: var(--navy-soft);
+}
+
+.btn-light {
+  background: var(--white);
+  color: var(--navy);
+}
+
+/* ---------- 5. HOMEPAGE HERO ---------- */
+
+.hero,
+.hero-section,
+.home-hero {
+  position: relative;
+  min-height: 650px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(7,15,25,.95), rgba(7,15,25,.72) 52%, rgba(7,15,25,.18)),
+    url("../images/hero-car.jpg") center/cover no-repeat,
+    var(--navy);
+  color: var(--white);
+}
+
+.hero::after,
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(7,15,25,.35), transparent 45%);
+}
+
+.hero-content,
+.hero-inner,
+.hero-text {
+  position: relative;
+  z-index: 2;
+  width: min(92%, var(--container));
+  margin-inline: auto;
+  max-width: 760px;
+  padding-block: 100px;
+}
+
+.hero h1,
+.hero-section h1,
+.home-hero h1 {
+  color: var(--white);
+  margin-bottom: 22px;
+}
+
+.hero h1 span,
+.hero-section h1 span {
+  color: var(--gold);
+}
+
+.hero p,
+.hero-section p,
+.home-hero p {
+  max-width: 570px;
+  color: rgba(255,255,255,.78);
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ---------- 6. INTRODUCTION ---------- */
+
+.intro-section,
+.about-preview {
+  padding: 100px 0;
+  background: var(--off-white);
+}
+
+.intro-content {
+  max-width: 850px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.intro-content h2 {
+  margin-bottom: 22px;
+}
+
+.intro-content p {
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+/* ---------- 7. DEPARTMENT CARDS ---------- */
+
+.departments-section,
+.categories-section {
+  padding: 100px 0;
+}
+
+.department-grid,
+.departments-grid,
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.department-card,
+.category-card {
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--navy);
+  color: var(--white);
+  transition: transform var(--transition);
+}
+
+.department-card:hover,
+.category-card:hover {
+  transform: translateY(-6px);
+}
+
+.department-card h3,
+.category-card h3 {
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.department-card p,
+.category-card p {
+  color: rgba(255,255,255,.7);
+}
+
+.department-card a,
+.category-card a {
+  color: var(--gold);
+  margin-top: 20px;
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ---------- 8. FEATURED INVENTORY ---------- */
+
+.featured-section,
+.inventory-section,
+.products-section {
+  padding: 100px 0;
+}
+
+.featured-section:nth-of-type(even) {
+  background: var(--off-white);
+}
+
+.vehicle-grid,
+.product-grid,
+.service-grid,
+.inventory-grid,
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+}
+
+.vehicle-card,
+.product-card,
+.service-card,
+.inventory-card,
+.listing-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.vehicle-card:hover,
+.product-card:hover,
+.service-card:hover,
+.inventory-card:hover,
+.listing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.card-image,
+.vehicle-image,
+.product-image,
+.service-image {
+  position: relative;
+  height: 230px;
+  background: var(--light-grey);
+  overflow: hidden;
+}
+
+.card-image img,
+.vehicle-image img,
+.product-image img,
+.service-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .6s ease;
+}
+
+.vehicle-card:hover img,
+.product-card:hover img,
+.service-card:hover img,
+.listing-card:hover img {
+  transform: scale(1.05);
+}
+
+.card-content,
+.vehicle-info,
+.product-info,
+.service-info {
+  padding: 24px;
+}
+
+.card-content h3,
+.vehicle-info h3,
+.product-info h3,
+.service-info h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.card-content p,
+.vehicle-info p,
+.product-info p,
+.service-info p {
+  font-size: .9rem;
+  margin-bottom: 15px;
+}
+
+.card-price,
+.vehicle-price,
+.product-price {
+  display: block;
+  color: var(--navy);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 15px 0;
+}
+
+.card-link,
+.view-details {
+  display: inline-block;
+  color: var(--gold);
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.card-link:hover,
+.view-details:hover {
+  color: var(--navy);
+}
+
+.badge,
+.status-badge,
+.stock-status {
+  display: inline-block;
+  padding: 6px 11px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ---------- 9. WHY CHOOSE US ---------- */
+
+.why-us,
+.why-choose-us {
+  padding: 100px 0;
+  background: var(--navy);
+  color: var(--white);
+}
+
+.why-us h2,
+.why-choose-us h2,
+.why-us h3,
+.why-choose-us h3 {
+  color: var(--white);
+}
+
+.why-us p,
+.why-choose-us p {
+  color: rgba(255,255,255,.68);
+}
+
+.benefits-grid,
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 35px;
+  margin-top: 45px;
+}
+
+.benefit,
+.feature {
+  padding: 25px 0;
+  border-top: 1px solid rgba(255,255,255,.17);
+}
+
+.benefit h3,
+.feature h3 {
+  margin-bottom: 12px;
+}
+
+/* ---------- 10. CALL TO ACTION ---------- */
+
+.cta-section,
+.contact-cta {
+  padding: 90px 5%;
+  background: var(--gold);
+  text-align: center;
+}
+
+.cta-section h2,
+.contact-cta h2 {
+  color: var(--navy);
+  margin-bottom: 15px;
+}
+
+.cta-section p,
+.contact-cta p {
+  color: rgba(11,20,32,.75);
+  max-width: 620px;
+  margin: 0 auto 25px;
+}
+
+/* ---------- 11. FOOTER ---------- */
+
+#site-footer {
+  background: #07101b;
+  color: var(--white);
+}
+
+.site-footer,
+.main-footer,
+footer {
+  background: #07101b;
+  color: var(--white);
+}
+
+.footer-inner,
+.footer-grid {
+  width: min(92%, var(--container));
+  margin-inline: auto;
+  padding: 65px 0 35px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 50px;
+}
+
+.footer-brand h3,
+.footer-column h3 {
+  color: var(--white);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.footer-brand p,
+.footer-column p {
+  color: rgba(255,255,255,.6);
+  font-size: .9rem;
+}
+
+.footer-column a {
+  display: block;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 10px;
+  font-size: .86rem;
+  transition: color var(--transition);
+}
+
+.footer-column a:hover {
+  color: var(--gold);
+}
+
+.footer-bottom {
+  width: min(92%, var(--container));
+  margin-inline: auto;
+  padding: 22px 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.48);
+  font-size: .78rem;
+}
+
+/* ---------- 12. INNER PAGE HERO ---------- */
+
+.page-hero,
+.inner-hero {
+  padding: 100px 4%;
+  background: var(--navy);
+  color: var(--white);
+  text-align: center;
+}
+
+.page-hero h1,
+.inner-hero h1 {
+  color: var(--white);
+  margin-bottom: 15px;
+}
+
+.page-hero p,
+.inner-hero p {
+  color: rgba(255,255,255,.7);
+  max-width: 650px;
+  margin: auto;
+}
+
+/* ---------- 13. BREADCRUMBS ---------- */
+
+.breadcrumbs {
+  padding: 18px 0;
+  font-size: .78rem;
+  color: var(--grey);
+}
+
+.breadcrumbs a {
+  color: var(--gold);
+}
+
+.breadcrumbs span {
+  margin: 0 8px;
+}
+
+/* ---------- 14. PRODUCT DETAIL PAGES ---------- */
+
+.detail-page,
+.product-detail,
+.vehicle-detail {
+  padding: 65px 0 100px;
+}
+
+.detail-layout,
+.product-detail-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 55px;
+  align-items: start;
+}
+
+.detail-gallery img,
+.product-detail-image img {
+  width: 100%;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.detail-info h1,
+.product-detail-info h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 18px;
+}
+
+.detail-description {
+  margin: 25px 0;
+}
+
+.detail-meta,
+.specifications {
+  margin: 25px 0;
+  border-top: 1px solid var(--border);
+}
+
+.detail-meta > div,
+.specifications > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+}
+
+.detail-meta strong,
+.specifications strong {
+  color: var(--navy);
+}
+
+/* ---------- 15. CONTACT & ENQUIRY ---------- */
+
+.contact-section {
+  padding: 80px 0;
+}
+
+.contact-card {
+  background: var(--off-white);
+  padding: 35px;
+  border: 1px solid var(--border);
+}
+
+.contact-card h2 {
+  margin-bottom: 15px;
+}
+
+.contact-card p {
+  margin-bottom: 20px;
+}
+
+.contact-form {
+  display: grid;
+  gap: 16px;
+}
+
+.contact-form input,
+.contact-form textarea,
+.contact-form select {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--dark);
+  outline: none;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus,
+.contact-form select:focus {
+  border-color: var(--gold);
+}
+
+.contact-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+/* ---------- 16. FILTERS & SEARCH ---------- */
+
+.inventory-controls,
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 35px;
+}
+
+.search-input,
+.filter-select {
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  min-width: 180px;
+  outline: none;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  border-color: var(--gold);
+}
+
+/* ---------- 17. EMPTY STATES ---------- */
+
+.empty-state,
+.no-results {
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--off-white);
+  color: var(--grey);
+}
+
+.empty-state h3,
+.no-results h3 {
+  margin-bottom: 10px;
+}
+
+/* ---------- 18. ANIMATIONS ---------- */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-up {
+  animation: fadeUp .7s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ---------- 19. TABLET RESPONSIVENESS ---------- */
+
+@media (max-width: 1000px) {
+  .department-grid,
+  .departments-grid,
+  .category-grid,
+  .vehicle-grid,
+  .product-grid,
+  .service-grid,
+  .inventory-grid,
+  .listing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .benefits-grid,
+  .features-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-layout,
+  .product-detail-layout {
+    gap: 30px;
+  }
+
+  .footer-inner,
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- 20. MOBILE RESPONSIVENESS ---------- */
+
+@media (max-width: 700px) {
+  .header-inner,
+  .nav-container {
+    min-height: 72px;
+  }
+
+  .nav-links,
+  .main-nav {
+    display: none;
+  }
+
+  .menu-toggle,
+  .mobile-menu-button {
+    display: inline-flex;
+  }
+
+  .hero,
+  .hero-section,
+  .home-hero {
+    min-height: 570px;
+    background-position: 60% center;
+  }
+
+  .hero-content,
+  .hero-inner,
+  .hero-text {
+    padding-block: 80px;
+  }
+
+  .hero p,
+  .hero-section p {
+    font-size: .93rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .button {
+    width: 100%;
+  }
+
+  .intro-section,
+  .about-preview,
+  .departments-section,
+  .categories-section,
+  .featured-section,
+  .inventory-section,
+  .products-section,
+  .why-us,
+  .why-choose-us {
+    padding: 70px 0;
+  }
+
+  .department-grid,
+  .departments-grid,
+  .category-grid,
+  .vehicle-grid,
+  .product-grid,
+  .service-grid,
+  .inventory-grid,
+  .listing-grid,
+  .benefits-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    margin-bottom: 30px;
+  }
+
+  .card-image,
+  .vehicle-image,
+  .product-image,
+  .service-image {
+    height: 220px;
+  }
+
+  .footer-inner,
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding-top: 50px;
+  }
+
+  .detail-layout,
+  .product-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .page-hero,
+  .inner-hero {
+    padding: 75px 5%;
+  }
+
+  .cta-section,
+  .contact-cta {
+    padding: 70px 6%;
+  }
+
+  .inventory-controls,
+  .filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-input,
+  .filter-select {
+    width: 100%;
+  }
+}
+
+/* ---------- 21. SMALL PHONES ---------- */
+
+@media (max-width: 380px) {
+  .logo,
+  .site-logo,
+  .brand {
+    font-size: 1.2rem;
+  }
+
+  h1 {
+    font-size: 2.35rem;
+  }
+
+  .btn,
+  .button {
+    padding: 12px 17px;
+    font-size: .72rem;
+  }
+
+  .card-content,
+  .vehicle-info,
+  .product-info,
+  .service-info {
+    padding: 19px;
+  }
+}
