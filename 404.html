@@ -4,25 +4,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <base href="/LIBERTY-MOTORS/">
+  <meta name="robots" content="noindex">
   <title>Liberty Motors</title>
-  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <base href="/LIBERTY-MOTORS/">
+
+  <script>
+    (function () {
+      var base = "/LIBERTY-MOTORS/";
+      var path = window.location.pathname;
+
+      if (path.startsWith(base) && path !== base) {
+        var route = path.slice(base.length);
+        var destination = route +
+          window.location.search +
+          window.location.hash;
+
+        sessionStorage.setItem(
+          "liberty_redirect",
+          destination
+        );
+
+        window.location.replace(base);
+      }
+    })();
+  </script>
 </head>
 <body>
-  <div id="site-header"></div>
-  <main id="app" class="page-shell">
-    <section class="section">
-      <div class="container">
-        <p class="eyebrow">LIBERTY MOTORS</p>
-        <h1>Page not found</h1>
-        <p>The page you're looking for may have moved or is unavailable.</p>
-        <a class="button button-primary" href="./">Return to homepage</a>
-      </div>
-    </section>
-  </main>
-  <div id="site-footer"></div>
-
-  <script src="assets/js/data.js"></script>
-  <script src="assets/js/app.js"></script>
+  <p>Redirecting to Liberty Motors...</p>
 </body>
 </html>
