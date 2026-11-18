@@ -24,9 +24,7 @@
     return;
   }
 
-  /* =========================================================
-     URL MANAGEMENT
-     ========================================================= */
+  /* URL MANAGEMENT */
 
   function siteUrl(path) {
     let clean = String(path || "").trim();
@@ -50,9 +48,7 @@
       clean = clean.slice(BASE_PATH.length);
     }
 
-    clean = clean.replace(/^\/+|\/+$/g, "");
-
-    return clean.toLowerCase();
+    return clean.replace(/^\/+|\/+$/g, "").toLowerCase();
   }
 
   let savedRoute = "";
@@ -67,21 +63,15 @@
     console.warn("Liberty Motors: session storage unavailable.");
   }
 
+  if (savedRoute) {
+    window.history.replaceState(null, "", siteUrl(savedRoute));
+  }
 
-   if (savedRoute) {
-  window.history.replaceState(
-    null,
-    "",
-    siteUrl(savedRoute)
-  );
-                                }
   let currentPath = savedRoute
     ? normalisePath(savedRoute)
     : normalisePath(window.location.pathname);
 
-  /* =========================================================
-     HELPERS
-     ========================================================= */
+  /* HELPERS */
 
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, function (char) {
@@ -135,6 +125,7 @@
 
   function getEnquiryLink(item, type) {
     const email = getEnquiryEmail(type);
+
     const subject = encodeURIComponent(
       "Enquiry about " + getItemName(item)
     );
@@ -162,9 +153,7 @@
     return Array.isArray(DATA[type]) ? DATA[type] : [];
   }
 
-  /* =========================================================
-     HEADER
-     ========================================================= */
+  /* HEADER */
 
   function renderHeader() {
     if (!header) return;
@@ -176,7 +165,7 @@
 
       if (!children.length) {
         return `
-          <a href="${siteUrl(item.url)}">
+          <a class="nav-link" href="${siteUrl(item.url)}">
             ${escapeHTML(item.label)}
           </a>
         `;
@@ -184,8 +173,9 @@
 
       return `
         <div class="nav-dropdown">
-          <a href="${siteUrl(item.url)}">
+          <a class="nav-link nav-dropdown-trigger" href="${siteUrl(item.url)}">
             ${escapeHTML(item.label)}
+            <span class="dropdown-arrow">⌄</span>
           </a>
 
           <div class="dropdown-menu">
@@ -210,7 +200,19 @@
           <span>${escapeHTML(DATA.business.name)}</span>
         </a>
 
-        <nav class="main-navigation">
+        <button
+          class="menu-toggle"
+          id="liberty-menu-toggle"
+          type="button"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="main-navigation" id="liberty-navigation">
           ${navigation.map(renderNavItem).join("")}
         </nav>
 
@@ -220,11 +222,24 @@
 
       </div>
     `;
+
+    const menuToggle = document.getElementById("liberty-menu-toggle");
+    const mainNavigation = document.getElementById("liberty-navigation");
+
+    if (menuToggle && mainNavigation) {
+      menuToggle.addEventListener("click", function () {
+        const isOpen = mainNavigation.classList.toggle("is-open");
+
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute(
+          "aria-label",
+          isOpen ? "Close navigation menu" : "Open navigation menu"
+        );
+      });
+    }
   }
 
-  /* =========================================================
-     FOOTER
-     ========================================================= */
+  /* FOOTER */
 
   function renderFooter() {
     if (!footer) return;
@@ -267,9 +282,7 @@
     `;
   }
 
-  /* =========================================================
-     LISTING CARDS
-     ========================================================= */
+  /* LISTING CARDS */
 
   function renderCard(item, type) {
     const slug = getSlug(item);
@@ -317,9 +330,7 @@
     `;
   }
 
-  /* =========================================================
-     HOMEPAGE FEATURED CONTENT
-     ========================================================= */
+  /* HOMEPAGE FEATURED CONTENT */
 
   function populateFeatured() {
     const carsContainer = document.getElementById("featured-cars");
@@ -343,9 +354,7 @@
     populate(servicesContainer, getArray("services"), "services");
   }
 
-  /* =========================================================
-     PAGE LAYOUT
-     ========================================================= */
+  /* PAGE LAYOUT */
 
   function pageLayout(title, description, content) {
     app.innerHTML = `
@@ -362,9 +371,7 @@
     `;
   }
 
-  /* =========================================================
-     CATEGORY PAGES
-     ========================================================= */
+  /* CATEGORY PAGES */
 
   function renderCategoryPage(type, title, description, filter) {
     let items = getArray(type);
@@ -397,9 +404,7 @@
     pageLayout(title, description, content);
   }
 
-  /* =========================================================
-     LISTING DETAIL PAGES
-     ========================================================= */
+  /* LISTING DETAIL PAGES */
 
   function findListing(path) {
     const segments = path.split("/");
@@ -422,6 +427,7 @@
 
   function renderDetailPage(item, type) {
     const title = getItemName(item);
+
     const images = item.images && item.images.length
       ? item.images
       : [getImage(item)];
@@ -499,9 +505,7 @@
     );
   }
 
-  /* =========================================================
-     ABOUT PAGE
-     ========================================================= */
+  /* ABOUT PAGE */
 
   function renderAboutPage() {
     pageLayout(
@@ -528,9 +532,7 @@
     );
   }
 
-  /* =========================================================
-     CONTACT PAGE
-     ========================================================= */
+  /* CONTACT PAGE */
 
   function renderContactPage() {
     const emails = DATA.emails || {};
@@ -574,15 +576,12 @@
     );
   }
 
-  /* =========================================================
-     ROUTING
-     ========================================================= */
+  /* ROUTING */
 
   function renderRoute() {
     const path = currentPath;
 
     if (!path) {
-      // Keep the original homepage HTML.
       populateFeatured();
       return;
     }
@@ -704,9 +703,7 @@
     );
   }
 
-  /* =========================================================
-     INITIALISE WEBSITE
-     ========================================================= */
+  /* INITIALISE WEBSITE */
 
   renderHeader();
   renderFooter();
