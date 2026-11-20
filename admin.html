@@ -30,17 +30,8 @@
       gap: 12px;
     }
 
-    header h1 {
-      font-size: 19px;
-    }
-
-    header span {
-      color: #d7b45a;
-    }
-
-    header small {
-      color: #d7b45a;
-    }
+    header h1 { font-size: 19px; }
+    header span, header small { color: #d7b45a; }
 
     main {
       max-width: 1050px;
@@ -63,7 +54,8 @@
 
     h3 {
       font-size: 17px;
-      margin-bottom: 10px;
+      margin: 12px 0;
+      color: #101d35;
     }
 
     p {
@@ -94,7 +86,7 @@
     }
 
     textarea {
-      min-height: 110px;
+      min-height: 105px;
       resize: vertical;
     }
 
@@ -122,9 +114,7 @@
       color: white;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     .dashboard-header {
       display: flex;
@@ -161,13 +151,11 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0 16px;
     }
 
-    .full-width {
-      grid-column: 1 / -1;
-    }
+    .full-width { grid-column: 1 / -1; }
 
     .form-actions {
       display: flex;
@@ -193,19 +181,13 @@
       height: 19px;
     }
 
-    .check-row label {
-      margin: 0;
-    }
+    .check-row label { margin: 0; }
 
     .listing-item {
       border: 1px solid #e1e5ec;
       border-radius: 9px;
       padding: 16px;
       margin-top: 14px;
-    }
-
-    .listing-item h3 {
-      margin-bottom: 7px;
     }
 
     .listing-meta {
@@ -254,47 +236,33 @@
       line-height: 1.5;
     }
 
-    .error {
-      color: #b42318;
-    }
-
-    .success {
-      color: #16834a;
-    }
+    .error { color: #b42318; }
+    .success { color: #16834a; }
 
     .muted {
       color: #667085;
       font-size: 13px;
+      margin-top: 6px;
     }
 
-    .section-heading {
-      margin-bottom: 15px;
+    .section-heading { margin-bottom: 15px; }
+    .section-heading p { font-size: 14px; }
+
+    .field-section {
+      background: #f8f9fb;
+      border: 1px solid #e5e9f0;
+      border-radius: 9px;
+      padding: 16px;
+      margin-top: 20px;
     }
 
-    .section-heading p {
-      font-size: 14px;
-    }
+    .field-section h3 { margin-top: 0; }
 
     @media(max-width: 600px) {
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .full-width {
-        grid-column: auto;
-      }
-
-      .panel {
-        padding: 19px;
-      }
-
-      .listing-actions button {
-        min-width: 100%;
-      }
+      .stats, .form-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: auto; }
+      .panel { padding: 19px; }
+      .listing-actions button { min-width: 100%; }
     }
   </style>
 </head>
@@ -331,9 +299,7 @@
           required
         >
 
-        <button type="submit" id="login-button">
-          Sign In
-        </button>
+        <button type="submit" id="login-button">Sign In</button>
       </form>
 
       <div id="message" role="status"></div>
@@ -344,20 +310,16 @@
     <section id="dashboard" class="hidden">
 
       <div class="panel">
-
         <div class="dashboard-header">
           <div>
             <h2>Dashboard</h2>
             <p>Welcome to your Liberty Motors control centre.</p>
           </div>
 
-          <button id="logout-button" class="danger">
-            Sign Out
-          </button>
+          <button id="logout-button" class="danger">Sign Out</button>
         </div>
 
         <div class="stats">
-
           <div class="stat">
             <p>Vehicles</p>
             <strong id="vehicle-count">0</strong>
@@ -372,7 +334,6 @@
             <p>Services</p>
             <strong id="service-count">0</strong>
           </div>
-
         </div>
       </div>
 
@@ -382,16 +343,18 @@
 
         <div class="section-heading">
           <h2 id="form-heading">Add New Listing</h2>
-          <p>Create a vehicle, spare part or automotive service listing.</p>
+          <p>Select a listing type to display its relevant information fields.</p>
         </div>
 
         <form id="inventory-form">
 
           <input type="hidden" id="listing-id">
 
+          <!-- COMMON FIELDS -->
+
           <div class="form-grid">
 
-            <div>
+            <div class="full-width">
               <label for="item-type">Listing Type *</label>
               <select id="item-type" required>
                 <option value="">Select listing type</option>
@@ -401,53 +364,225 @@
               </select>
             </div>
 
-            <div>
-              <label for="category">Category</label>
-              <input
-                type="text"
-                id="category"
-                placeholder="e.g. SUV, Tyres, Window Tinting"
-              >
-            </div>
-
             <div class="full-width">
               <label for="title">Listing Name *</label>
               <input
                 type="text"
                 id="title"
-                placeholder="e.g. 2022 Toyota Camry"
+                placeholder="Enter listing name"
                 required
               >
             </div>
 
             <div>
-              <label for="price">Price</label>
+              <label for="category" id="category-label">Category</label>
               <input
                 type="text"
-                id="price"
-                placeholder="e.g. $25,000"
+                id="category"
+                placeholder="Select a listing type first"
               >
             </div>
 
             <div>
-              <label for="year">Year</label>
+              <label for="price" id="price-label">Price</label>
               <input
                 type="number"
-                id="year"
-                placeholder="e.g. 2022"
+                id="price"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 25000"
               >
             </div>
 
-            <div>
-              <label for="mileage">Mileage</label>
-              <input
-                type="text"
-                id="mileage"
-                placeholder="e.g. 35,000 miles"
-              >
+          </div>
+
+          <!-- VEHICLE FIELDS -->
+
+          <div id="vehicle-fields" class="field-section hidden">
+            <h3>Vehicle Information</h3>
+
+            <div class="form-grid">
+
+              <div>
+                <label for="make">Make</label>
+                <input id="make" type="text" placeholder="e.g. Toyota">
+              </div>
+
+              <div>
+                <label for="model">Model</label>
+                <input id="model" type="text" placeholder="e.g. Camry">
+              </div>
+
+              <div>
+                <label for="year">Year</label>
+                <input id="year" type="number" placeholder="e.g. 2022">
+              </div>
+
+              <div>
+                <label for="mileage">Mileage</label>
+                <input id="mileage" type="text" placeholder="e.g. 35,000 miles">
+              </div>
+
+              <div>
+                <label for="transmission">Transmission</label>
+                <select id="transmission">
+                  <option value="">Select transmission</option>
+                  <option>Automatic</option>
+                  <option>Manual</option>
+                  <option>CVT</option>
+                  <option>Semi-Automatic</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="engine">Engine</label>
+                <input id="engine" type="text" placeholder="e.g. 2.5L V6">
+              </div>
+
+              <div>
+                <label for="fuel-type">Fuel Type</label>
+                <select id="fuel-type">
+                  <option value="">Select fuel type</option>
+                  <option>Petrol</option>
+                  <option>Diesel</option>
+                  <option>Hybrid</option>
+                  <option>Electric</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="vehicle-condition">Condition</label>
+                <select id="vehicle-condition">
+                  <option value="">Select condition</option>
+                  <option>Brand New</option>
+                  <option>Foreign Used</option>
+                  <option>Nigerian Used</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="exterior-colour">Exterior Colour</label>
+                <input id="exterior-colour" type="text" placeholder="e.g. Black">
+              </div>
+
+              <div>
+                <label for="interior-colour">Interior Colour</label>
+                <input id="interior-colour" type="text" placeholder="e.g. Beige">
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PART FIELDS -->
+
+          <div id="part-fields" class="field-section hidden">
+            <h3>Spare Part Information</h3>
+
+            <div class="form-grid">
+
+              <div>
+                <label for="manufacturer">Brand / Manufacturer</label>
+                <input id="manufacturer" type="text" placeholder="e.g. Bosch">
+              </div>
+
+              <div>
+                <label for="part-number">Part Number</label>
+                <input id="part-number" type="text" placeholder="Enter part number">
+              </div>
+
+              <div class="full-width">
+                <label for="compatibility">Compatible Vehicles</label>
+                <textarea
+                  id="compatibility"
+                  placeholder="e.g. Toyota Camry 2018–2023, Toyota Avalon 2019–2022"
+                ></textarea>
+              </div>
+
+              <div>
+                <label for="part-condition">Condition</label>
+                <select id="part-condition">
+                  <option value="">Select condition</option>
+                  <option>Brand New</option>
+                  <option>Used</option>
+                  <option>Refurbished</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="stock-quantity">Quantity in Stock</label>
+                <input id="stock-quantity" type="number" min="0" placeholder="e.g. 10">
+              </div>
+
+              <div class="full-width">
+                <label for="warranty">Warranty Information</label>
+                <input id="warranty" type="text" placeholder="e.g. 6 months warranty">
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SERVICE FIELDS -->
+
+          <div id="service-fields" class="field-section hidden">
+            <h3>Service Information</h3>
+
+            <div class="form-grid">
+
+              <div>
+                <label for="duration">Estimated Duration</label>
+                <input id="duration" type="text" placeholder="e.g. 2–3 hours">
+              </div>
+
+              <div>
+                <label for="compatible-vehicles">Suitable Vehicle Types</label>
+                <input
+                  id="compatible-vehicles"
+                  type="text"
+                  placeholder="e.g. SUVs, Sedans, Trucks"
+                >
+              </div>
+
+              <div class="full-width">
+                <label for="whats-included">What's Included</label>
+                <textarea
+                  id="whats-included"
+                  placeholder="List what the customer receives with this service..."
+                ></textarea>
+              </div>
+
+              <div class="full-width">
+                <label for="booking-availability">Booking Availability</label>
+                <input
+                  id="booking-availability"
+                  type="text"
+                  placeholder="e.g. Monday–Saturday, by appointment"
+                >
+              </div>
+
+            </div>
+          </div>
+
+          <!-- COMMON DESCRIPTION -->
+
+          <div class="form-grid">
+
+            <div class="full-width">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                placeholder="Describe this listing..."
+              ></textarea>
             </div>
 
-            <div>
+            <div class="full-width">
+              <label for="specifications">Additional Specifications</label>
+              <textarea
+                id="specifications"
+                placeholder="Enter additional specifications, one per line: Name: Value"
+              ></textarea>
+            </div>
+
+            <div class="full-width">
               <label for="status">Availability Status</label>
               <select id="status">
                 <option value="available">Available</option>
@@ -455,25 +590,6 @@
                 <option value="sold">Sold</option>
                 <option value="unavailable">Unavailable</option>
               </select>
-            </div>
-
-            <div class="full-width">
-              <label for="description">Description</label>
-              <textarea
-                id="description"
-                placeholder="Describe this vehicle, part or service..."
-              ></textarea>
-            </div>
-
-            <div class="full-width">
-              <label for="specifications">Specifications</label>
-              <textarea
-                id="specifications"
-                placeholder="Engine: 2.5L&#10;Transmission: Automatic&#10;Fuel: Petrol"
-              ></textarea>
-              <p class="muted">
-                Enter one specification per line using: Name: Value
-              </p>
             </div>
 
             <div class="full-width">
@@ -485,8 +601,8 @@
                 multiple
               >
               <p class="muted">
-                You can select multiple photographs. Image upload will be
-                enabled after the storage setup.
+                Multiple photographs can be selected. Upload functionality
+                will be connected separately.
               </p>
             </div>
 
@@ -503,10 +619,7 @@
           </div>
 
           <div class="form-actions">
-
-            <button type="submit" id="save-button">
-              Save Listing
-            </button>
+            <button type="submit" id="save-button">Save Listing</button>
 
             <button
               type="button"
@@ -515,7 +628,6 @@
             >
               Cancel Edit
             </button>
-
           </div>
 
         </form>
@@ -524,7 +636,7 @@
 
       </section>
 
-      <!-- INVENTORY LIST -->
+      <!-- INVENTORY MANAGEMENT -->
 
       <section class="panel">
 
