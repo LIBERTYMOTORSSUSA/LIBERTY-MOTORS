@@ -13,14 +13,8 @@ window.LIBERTY_DATA = {
   },
 
   emails: {
-    general: "YOUR_GENERAL_EMAIL",
-    cars: "YOUR_CARS_EMAIL",
-    parts: "YOUR_PARTS_EMAIL",
-    services: "YOUR_SERVICES_EMAIL"
-  },
-
-  getEmailForCategory: function(category) {
-    return this.emails[category] || this.emails.general;
+    general: "libertymotorsusaco@gmail.com",
+    payments: "libertymotorsusa.sales@gmail.com"
   },
 
   navigation: [
