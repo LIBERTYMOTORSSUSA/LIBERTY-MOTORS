@@ -258,6 +258,45 @@
 
     .field-section h3 { margin-top: 0; }
 
+    /* INVENTORY IMAGE MANAGER */
+
+    #image-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .image-preview-item {
+      border: 1px solid #e1e5ec;
+      border-radius: 9px;
+      overflow: hidden;
+      background: #f8f9fb;
+      min-width: 0;
+    }
+
+    .image-preview-item img {
+      display: block;
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+    }
+
+    .image-preview-item button {
+      margin: 0;
+      padding: 9px;
+      border-radius: 0;
+      background: #a52d35;
+      color: white;
+      font-size: 12px;
+    }
+
+    .image-preview-item p {
+      padding: 7px;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
     @media(max-width: 600px) {
       .stats, .form-grid { grid-template-columns: 1fr; }
       .full-width { grid-column: auto; }
@@ -592,18 +631,24 @@
               </select>
             </div>
 
+            <!-- IMAGE MANAGER -->
+
             <div class="full-width">
               <label for="images">Listing Photographs</label>
+
               <input
                 type="file"
                 id="images"
                 accept="image/*"
                 multiple
               >
+
               <p class="muted">
-                Multiple photographs can be selected. Upload functionality
-                will be connected separately.
+                Select multiple photographs. You can add new photographs
+                or remove existing ones when editing a listing.
               </p>
+
+              <div id="image-preview"></div>
             </div>
 
           </div>
