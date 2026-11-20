@@ -1,6 +1,7 @@
 
 /* =========================================================
    LIBERTY MOTORS — WEBSITE ENGINE
+   Supabase-connected public inventory
    GitHub Pages project-site compatible
    ========================================================= */
 
@@ -9,6 +10,7 @@
 
   const BASE_PATH = "/LIBERTY-MOTORS/";
   const DATA = window.LIBERTY_DATA;
+  const db = window.libertySupabase;
 
   if (!DATA) {
     console.error("Liberty Motors: data.js was not loaded.");
@@ -23,6 +25,8 @@
     console.error("Liberty Motors: #app was not found.");
     return;
   }
+
+  let inventoryError = false;
 
   /* URL MANAGEMENT */
 
@@ -141,6 +145,87 @@
 
   function getArray(type) {
     return Array.isArray(DATA[type]) ? DATA[type] : [];
+  }
+
+  function getEmptyMessage(title) {
+    if (inventoryError) {
+      return `
+        <div class="empty-state">
+          <h2>Temporarily Unavailable</h2>
+          <p>
+            We are having trouble loading our inventory.
+            Please try again shortly.
+          </p>
+          <button
+            class="listing-button"
+            type="button"
+            onclick="window.location.reload()"
+          >
+            Try Again
+          </button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="empty-state">
+        <h2>Coming Soon</h2>
+        <p>
+          We are preparing our ${escapeHTML(title.toLowerCase())}
+          collection. Please check back soon.
+        </p>
+        <a class="listing-button" href="${siteUrl("contact")}">
+          Contact Us
+        </a>
+      </div>
+    `;
+  }
+
+  /* SUPABASE INVENTORY CONNECTION */
+
+  async function loadInventory() {
+    if (!db) {
+      throw new Error("Supabase connection was not found.");
+    }
+
+    const { data, error } = await db
+      .from("inventory")
+      .select("*")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    DATA.cars = [];
+    DATA.parts = [];
+    DATA.services = [];
+
+    const typeMap = {
+      vehicle: "cars",
+      part: "parts",
+      service: "services"
+    };
+
+    (data || []).forEach(function (item) {
+      const destination = typeMap[item.item_type];
+
+      if (!destination) {
+        console.warn(
+          "Liberty Motors: Unknown inventory type:",
+          item.item_type
+        );
+        return;
+      }
+
+      DATA[destination].push(item);
+    });
+
+    console.log("Liberty Motors: Inventory loaded.");
+    console.log("Vehicles:", DATA.cars.length);
+    console.log("Parts:", DATA.parts.length);
+    console.log("Services:", DATA.services.length);
   }
 
   /* EMAIL AUTOMATION */
@@ -447,7 +532,7 @@
 
       container.innerHTML = featured.length
         ? featured.map(item => renderCard(item, type)).join("")
-        : `<p class="empty-message">New ${type} listings coming soon.</p>`;
+        : getEmptyMessage(type);
     }
 
     populate(carsContainer, getArray("cars"), "cars");
@@ -489,18 +574,7 @@
           ${items.map(item => renderCard(item, type)).join("")}
         </div>
       `
-      : `
-        <div class="empty-state">
-          <h2>Coming Soon</h2>
-          <p>
-            We are preparing our ${escapeHTML(title.toLowerCase())}
-            collection. Please check back soon.
-          </p>
-          <a class="listing-button" href="${siteUrl("contact")}">
-            Contact Us
-          </a>
-        </div>
-      `;
+      : getEmptyMessage(title);
 
     pageLayout(title, description, content);
   }
@@ -520,7 +594,8 @@
     }
 
     const item = getArray(type).find(entry =>
-      getSlug(entry).toLowerCase() === slug
+      getSlug(entry).toLowerCase() === slug &&
+      entry.is_published !== false
     );
 
     return item ? { item, type } : null;
@@ -837,11 +912,33 @@
 
   /* INITIALISE WEBSITE */
 
-  renderHeader();
-  renderFooter();
-  renderRoute();
+  async function initialiseWebsite() {
+    renderHeader();
+    renderFooter();
 
-  console.log("Liberty Motors website engine loaded.");
-  console.log("Current route:", currentPath);
+    app.innerHTML = `
+      <section class="page-content">
+        <div class="empty-state">
+          <h2>Loading Liberty Motors</h2>
+          <p>Please wait while we load our latest inventory.</p>
+        </div>
+      </section>
+    `;
+
+    try {
+      await loadInventory();
+      inventoryError = false;
+    } catch (error) {
+      inventoryError = true;
+      console.error("Liberty Motors: Inventory loading failed.", error);
+    }
+
+    renderRoute();
+
+    console.log("Liberty Motors website engine loaded.");
+    console.log("Current route:", currentPath);
+  }
+
+  initialiseWebsite();
 
 })();
