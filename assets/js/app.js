@@ -1,7 +1,7 @@
 
 /* =========================================================
    LIBERTY MOTORS — WEBSITE ENGINE
-   Supabase-connected public inventory
+   Supabase-connected
    GitHub Pages project-site compatible
    ========================================================= */
 
@@ -156,13 +156,9 @@
             We are having trouble loading our inventory.
             Please try again shortly.
           </p>
-          <button
-            class="listing-button"
-            type="button"
-            onclick="window.location.reload()"
-          >
-            Try Again
-          </button>
+          <a class="listing-button" href="${siteUrl("")}">
+            Return Home
+          </a>
         </div>
       `;
     }
@@ -181,11 +177,11 @@
     `;
   }
 
-  /* SUPABASE INVENTORY CONNECTION */
+  /* SUPABASE INVENTORY */
 
   async function loadInventory() {
     if (!db) {
-      throw new Error("Supabase connection was not found.");
+      throw new Error("Supabase client was not found.");
     }
 
     const { data, error } = await db
@@ -639,7 +635,7 @@
           class="listing-button"
           href="${getBookNowLink(item)}"
         >
-          Book Now
+          Book This Service
         </a>
       `
       : `
@@ -916,23 +912,22 @@
     renderHeader();
     renderFooter();
 
-    app.innerHTML = `
-      <section class="page-content">
-        <div class="empty-state">
-          <h2>Loading Liberty Motors</h2>
-          <p>Please wait while we load our latest inventory.</p>
-        </div>
-      </section>
-    `;
+    // Preserve the original homepage HTML.
+    // Do not clear the #app container here.
 
     try {
       await loadInventory();
       inventoryError = false;
     } catch (error) {
       inventoryError = true;
-      console.error("Liberty Motors: Inventory loading failed.", error);
+      console.error(
+        "Liberty Motors: Inventory loading failed.",
+        error
+      );
     }
 
+    // Render the correct route only after inventory loading.
+    // On the homepage, this updates only the featured sections.
     renderRoute();
 
     console.log("Liberty Motors website engine loaded.");
