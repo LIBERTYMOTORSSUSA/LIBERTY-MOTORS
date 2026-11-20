@@ -1,13 +1,15 @@
 
 /* =========================================================
    LIBERTY MOTORS — ADMIN ENGINE
-   Dynamic inventory management
+   Dynamic inventory management + Supabase image manager
    ========================================================= */
 
 (function () {
   "use strict";
 
   const db = window.libertySupabase;
+  const STORAGE_BUCKET = "inventory-images";
+  const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB per image
 
   const loginPanel = document.getElementById("login-panel");
   const dashboard = document.getElementById("dashboard");
@@ -22,8 +24,16 @@
   const cancelEditButton = document.getElementById("cancel-edit-button");
 
   const itemType = document.getElementById("item-type");
+  const imagesInput = document.getElementById("images");
+  const imagePreview = document.getElementById("image-preview");
 
   let inventory = [];
+
+  // Image manager state
+  let existingImages = [];
+  let removedImages = [];
+  let selectedFiles = [];
+  let previewObjectURLs = [];
 
   if (!db) {
     document.getElementById("message").textContent =
@@ -117,6 +127,303 @@
       .filter(([key]) => !excludedKeys.includes(key))
       .map(([key, val]) => key + ": " + val)
       .join("\n");
+  }
+
+  /* IMAGE MANAGER */
+
+  function revokePreviewURLs() {
+    previewObjectURLs.forEach(function (url) {
+      URL.revokeObjectURL(url);
+    });
+
+    previewObjectURLs = [];
+  }
+
+  function clearImageState() {
+    revokePreviewURLs();
+
+    existingImages = [];
+    removedImages = [];
+    selectedFiles = [];
+
+    if (imagesInput) {
+      imagesInput.value = "";
+    }
+
+    renderImagePreview();
+  }
+
+  function renderImagePreview() {
+    if (!imagePreview) return;
+
+    revokePreviewURLs();
+    imagePreview.innerHTML = "";
+
+    existingImages.forEach(function (url, index) {
+      const card = document.createElement("div");
+      card.className = "image-preview-item";
+
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = "Existing listing photograph";
+      image.loading = "lazy";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Remove photograph";
+      button.dataset.imageKind = "existing";
+      button.dataset.imageIndex = String(index);
+
+      const caption = document.createElement("p");
+      caption.textContent = "Existing photograph";
+
+      card.appendChild(image);
+      card.appendChild(caption);
+      card.appendChild(button);
+
+      imagePreview.appendChild(card);
+    });
+
+    selectedFiles.forEach(function (file, index) {
+      const card = document.createElement("div");
+      card.className = "image-preview-item";
+
+      const objectURL = URL.createObjectURL(file);
+      previewObjectURLs.push(objectURL);
+
+      const image = document.createElement("img");
+      image.src = objectURL;
+      image.alt = file.name;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Remove photograph";
+      button.dataset.imageKind = "new";
+      button.dataset.imageIndex = String(index);
+
+      const caption = document.createElement("p");
+      caption.textContent = file.name;
+
+      card.appendChild(image);
+      card.appendChild(caption);
+      card.appendChild(button);
+
+      imagePreview.appendChild(card);
+    });
+
+    if (!existingImages.length && !selectedFiles.length) {
+      const emptyMessage = document.createElement("p");
+      emptyMessage.className = "muted";
+      emptyMessage.textContent = "No photographs selected.";
+      imagePreview.appendChild(emptyMessage);
+    }
+  }
+
+  imagesInput.addEventListener("change", function () {
+    const incomingFiles = Array.from(imagesInput.files || []);
+    const validFiles = [];
+    const errors = [];
+
+    incomingFiles.forEach(function (file) {
+      if (!file.type.startsWith("image/")) {
+        errors.push(file.name + " is not an image.");
+        return;
+      }
+
+      if (file.size > MAX_IMAGE_SIZE) {
+        errors.push(file.name + " exceeds the 10 MB limit.");
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    selectedFiles = selectedFiles.concat(validFiles);
+
+    // Clear the input so the same file can be selected again if needed.
+    imagesInput.value = "";
+
+    renderImagePreview();
+
+    if (errors.length) {
+      setMessage(
+        inventoryMessage,
+        errors.join(" "),
+        "error"
+      );
+    } else if (validFiles.length) {
+      setMessage(
+        inventoryMessage,
+        validFiles.length + " photograph(s) added to the selection. Save the listing to upload them.",
+        "success"
+      );
+    }
+  });
+
+  imagePreview.addEventListener("click", function (event) {
+    const button = event.target.closest("button[data-image-kind]");
+
+    if (!button) return;
+
+    const index = Number(button.dataset.imageIndex);
+    const kind = button.dataset.imageKind;
+
+    if (!Number.isInteger(index) || index < 0) return;
+
+    if (kind === "existing" && existingImages[index]) {
+      const removedURL = existingImages.splice(index, 1)[0];
+
+      if (!removedImages.includes(removedURL)) {
+        removedImages.push(removedURL);
+      }
+
+      setMessage(
+        inventoryMessage,
+        "Photograph marked for removal. Save the listing to confirm the change.",
+        "success"
+      );
+    }
+
+    if (kind === "new" && selectedFiles[index]) {
+      selectedFiles.splice(index, 1);
+
+      setMessage(
+        inventoryMessage,
+        "Selected photograph removed.",
+        "success"
+      );
+    }
+
+    renderImagePreview();
+  });
+
+  function getStoragePath(publicURL) {
+    try {
+      const parsedURL = new URL(publicURL);
+
+      const marker =
+        "/storage/v1/object/public/" + STORAGE_BUCKET + "/";
+
+      const markerIndex = parsedURL.pathname.indexOf(marker);
+
+      if (markerIndex === -1) {
+        return null;
+      }
+
+      const encodedPath = parsedURL.pathname.slice(
+        markerIndex + marker.length
+      );
+
+      return encodedPath
+        .split("/")
+        .map(segment => decodeURIComponent(segment))
+        .join("/");
+
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function makeSafeFileName(filename) {
+    const cleaned = String(filename || "image")
+      .normalize("NFKD")
+      .replace(/[^a-zA-Z0-9._-]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    return cleaned || "image";
+  }
+
+  function createUploadFolder() {
+    return Date.now().toString(36) + "-" +
+      Math.random().toString(36).slice(2, 12);
+  }
+
+  async function uploadSelectedImages() {
+    const uploadedURLs = [];
+    const uploadedPaths = [];
+
+    if (!selectedFiles.length) {
+      return {
+        urls: uploadedURLs,
+        paths: uploadedPaths
+      };
+    }
+
+    const folder = "listings/" + createUploadFolder();
+
+    for (let index = 0; index < selectedFiles.length; index++) {
+      const file = selectedFiles[index];
+
+      setMessage(
+        inventoryMessage,
+        "Uploading photograph " + (index + 1) +
+          " of " + selectedFiles.length + "...",
+        ""
+      );
+
+      const safeName = makeSafeFileName(file.name);
+      const path = folder + "/" + (index + 1) + "-" + safeName;
+
+      const { data, error } = await db.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type
+        });
+
+      if (error) {
+        if (uploadedPaths.length) {
+          await db.storage
+            .from(STORAGE_BUCKET)
+            .remove(uploadedPaths);
+        }
+
+        throw new Error(
+          "Photograph upload failed (" + file.name + "): " + error.message
+        );
+      }
+
+      uploadedPaths.push(data.path || path);
+
+      const { data: publicData } = db.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(data.path || path);
+
+      if (!publicData || !publicData.publicUrl) {
+        await db.storage
+          .from(STORAGE_BUCKET)
+          .remove(uploadedPaths);
+
+        throw new Error(
+          "Could not generate a public URL for an uploaded photograph."
+        );
+      }
+
+      uploadedURLs.push(publicData.publicUrl);
+    }
+
+    return {
+      urls: uploadedURLs,
+      paths: uploadedPaths
+    };
+  }
+
+  async function removeStoredImages(imageURLs) {
+    const paths = imageURLs
+      .map(getStoragePath)
+      .filter(Boolean);
+
+    if (!paths.length) {
+      return null;
+    }
+
+    const { error } = await db.storage
+      .from(STORAGE_BUCKET)
+      .remove(paths);
+
+    return error || null;
   }
 
   /* DYNAMIC FORM */
@@ -328,6 +635,10 @@
             Price: ${escapeHTML(formatPrice(item.price))}
           </p>
 
+          <p class="listing-meta">
+            Photographs: ${Array.isArray(item.images) ? item.images.length : 0}
+          </p>
+
           <span class="status ${published ? "published" : "unpublished"}">
             ${published ? "Published" : "Unpublished"}
           </span>
@@ -426,6 +737,8 @@
 
     setValue("listing-id", "");
 
+    clearImageState();
+
     byId("form-heading").textContent = "Add New Listing";
     saveButton.textContent = "Save Listing";
 
@@ -459,7 +772,10 @@
       return;
     }
 
-    if (priceInput && (!Number.isFinite(Number(priceInput)) || Number(priceInput) < 0)) {
+    if (
+      priceInput &&
+      (!Number.isFinite(Number(priceInput)) || Number(priceInput) < 0)
+    ) {
       setMessage(inventoryMessage, "Enter a valid price.", "error");
       return;
     }
@@ -467,23 +783,26 @@
     const price = priceInput ? Number(priceInput) : null;
     const year = yearInput ? Number(yearInput) : null;
 
-    if (yearInput && (!Number.isInteger(year) || year < 1886 || year > 2100)) {
+    if (
+      yearInput &&
+      (!Number.isInteger(year) || year < 1886 || year > 2100)
+    ) {
       setMessage(inventoryMessage, "Enter a valid vehicle year.", "error");
-      return;
-    }
-
-    if (byId("images").files.length > 0) {
-      setMessage(
-        inventoryMessage,
-        "Image uploads are not connected yet. Please remove selected photographs before saving. We'll enable uploads in the next stage.",
-        "error"
-      );
       return;
     }
 
     const existingItem = id
       ? inventory.find(item => String(item.id) === String(id))
       : null;
+
+    if (id && !existingItem) {
+      setMessage(
+        inventoryMessage,
+        "This listing could not be found. Please reload the inventory and try again.",
+        "error"
+      );
+      return;
+    }
 
     const payload = {
       title: title,
@@ -500,16 +819,30 @@
       is_published: byId("is-published").checked
     };
 
-    if (!id) {
-      payload.images = [];
-    }
-
     saveButton.disabled = true;
     saveButton.textContent = id ? "Updating..." : "Saving...";
 
-    setMessage(inventoryMessage, "Saving listing...", "");
+    let uploadedImages = [];
+    let uploadPaths = [];
 
     try {
+      setMessage(
+        inventoryMessage,
+        selectedFiles.length
+          ? "Preparing photographs..."
+          : "Saving listing...",
+        ""
+      );
+
+      // Upload new photographs first.
+      const uploadResult = await uploadSelectedImages();
+
+      uploadedImages = uploadResult.urls;
+      uploadPaths = uploadResult.paths;
+
+      // Combine retained existing images with new uploads.
+      payload.images = existingImages.concat(uploadedImages);
+
       let result;
 
       if (id) {
@@ -527,26 +860,67 @@
         throw result.error;
       }
 
+      // The database has saved successfully.
+      // Now it is safe to delete photographs marked for removal.
+      let removalWarning = "";
+
+      if (removedImages.length) {
+        setMessage(
+          inventoryMessage,
+          "Listing saved. Removing deleted photographs...",
+          ""
+        );
+
+        const removalError = await removeStoredImages(removedImages);
+
+        if (removalError) {
+          removalWarning =
+            " Some removed photographs could not be deleted from Storage: " +
+            removalError.message;
+        }
+      }
+
       resetInventoryForm();
 
       setMessage(
         inventoryMessage,
-        id ? "Listing updated successfully." : "Listing saved successfully.",
-        "success"
+        (id
+          ? "Listing updated successfully."
+          : "Listing saved successfully.") +
+          (uploadedImages.length
+            ? " " + uploadedImages.length + " photograph(s) uploaded."
+            : "") +
+          removalWarning,
+        removalWarning ? "error" : "success"
       );
 
       await loadInventory();
 
     } catch (error) {
+      // If the database save failed after uploading,
+      // clean up the new files to avoid orphaned uploads.
+      if (uploadPaths.length) {
+        const { error: cleanupError } = await db.storage
+          .from(STORAGE_BUCKET)
+          .remove(uploadPaths);
+
+        if (cleanupError) {
+          console.error("Image cleanup failed:", cleanupError);
+        }
+      }
+
       setMessage(
         inventoryMessage,
-        "Could not save listing: " + error.message,
+        "Could not save listing: " + (error.message || "Unknown error"),
         "error"
       );
-    }
 
-    saveButton.disabled = false;
-    saveButton.textContent = "Save Listing";
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = value("listing-id")
+        ? "Update Listing"
+        : "Save Listing";
+    }
   });
 
   /* FILL TYPE-SPECIFIC FIELDS */
@@ -634,6 +1008,16 @@
 
     fillSpecifications(item);
 
+    // Load existing photographs into the image manager.
+    existingImages = Array.isArray(item.images)
+      ? item.images.slice()
+      : [];
+
+    removedImages = [];
+    selectedFiles = [];
+
+    renderImagePreview();
+
     byId("form-heading").textContent = "Edit Listing";
     saveButton.textContent = "Update Listing";
 
@@ -711,7 +1095,24 @@
       return;
     }
 
-    setMessage(inventoryMessage, "Listing deleted successfully.", "success");
+    let message = "Listing deleted successfully.";
+
+    // Also remove its stored photographs.
+    if (Array.isArray(item.images) && item.images.length) {
+      const removalError = await removeStoredImages(item.images);
+
+      if (removalError) {
+        message +=
+          " However, some photographs could not be removed from Storage: " +
+          removalError.message;
+      }
+    }
+
+    setMessage(
+      inventoryMessage,
+      message,
+      message.includes("could not") ? "error" : "success"
+    );
 
     await loadInventory();
   }
@@ -735,6 +1136,7 @@
 
   async function initialize() {
     updateFormFields();
+    renderImagePreview();
 
     const { data, error } = await db.auth.getSession();
 
