@@ -97,6 +97,18 @@
     return escapeHTML(price);
   }
 
+  function getEmailPrice(price) {
+    if (price === undefined || price === null || price === "") {
+      return "Contact for price";
+    }
+
+    if (typeof price === "number") {
+      return "$" + price.toLocaleString("en-US");
+    }
+
+    return String(price);
+  }
+
   function getItemName(item) {
     return item.title || item.name || "Untitled listing";
   }
@@ -117,33 +129,11 @@
       "assets/images/vehicle-placeholder.jpg";
   }
 
-  function getEnquiryEmail(type) {
-    return DATA.getEmailForCategory
-      ? DATA.getEmailForCategory(type)
-      : DATA.emails.general;
-  }
-
-  function getEnquiryLink(item, type) {
-    const email = getEnquiryEmail(type);
-
-    const subject = encodeURIComponent(
-      "Enquiry about " + getItemName(item)
-    );
-
-    const body = encodeURIComponent(
-      "Hello Liberty Motors,\n\nI am interested in " +
-      getItemName(item) +
-      ". Please provide more information.\n\nThank you."
-    );
-
-    return "mailto:" + email + "?subject=" + subject + "&body=" + body;
-  }
-
   function getTypeLabel(type) {
     const labels = {
       cars: "Vehicle",
-      parts: "Part",
-      services: "Service"
+      parts: "Automotive Part",
+      services: "Automotive Service"
     };
 
     return labels[type] || "Listing";
@@ -151,6 +141,112 @@
 
   function getArray(type) {
     return Array.isArray(DATA[type]) ? DATA[type] : [];
+  }
+
+  /* EMAIL AUTOMATION */
+
+  function createEmailLink(email, subject, body) {
+    return "mailto:" + email +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+  }
+
+  function getListingDetails(item, type) {
+    const details = [
+      "Listing: " + getItemName(item),
+      "Type: " + getTypeLabel(type),
+      "Listed Price: " + getEmailPrice(item.price)
+    ];
+
+    if (item.year) {
+      details.push("Year: " + item.year);
+    }
+
+    if (item.mileage) {
+      details.push("Mileage: " + item.mileage);
+    }
+
+    if (item.category) {
+      details.push("Category: " + item.category);
+    }
+
+    if (item.status) {
+      details.push("Status: " + item.status);
+    }
+
+    const specifications = item.specifications || {};
+
+    Object.entries(specifications).forEach(([key, value]) => {
+      details.push(key + ": " + value);
+    });
+
+    if (item.description) {
+      details.push("Description: " + item.description);
+    }
+
+    return details.join("\n");
+  }
+
+  function getGeneralEnquiryLink(item, type) {
+    const email = DATA.emails.general;
+
+    const subject =
+      "General Enquiry - " + getItemName(item);
+
+    const body =
+      "Hello Liberty Motors,\n\n" +
+      "I would like to make a general enquiry about the following listing:\n\n" +
+      getListingDetails(item, type) +
+      "\n\nPlease provide more information.\n\n" +
+      "Thank you.";
+
+    return createEmailLink(email, subject, body);
+  }
+
+  function getBuyNowLink(item, type) {
+    const email = DATA.emails.payments;
+
+    const subject =
+      "Purchase Request - " + getItemName(item);
+
+    const body =
+      "Hello Liberty Motors Sales Team,\n\n" +
+      "I would like to proceed with purchasing the following item:\n\n" +
+      getListingDetails(item, type) +
+      "\n\nPlease confirm availability and provide the necessary payment instructions so I can proceed with the purchase.\n\n" +
+      "Thank you.";
+
+    return createEmailLink(email, subject, body);
+  }
+
+  function getBookNowLink(item) {
+    const email = DATA.emails.payments;
+
+    const subject =
+      "Service Booking Request - " + getItemName(item);
+
+    const body =
+      "Hello Liberty Motors Sales Team,\n\n" +
+      "I would like to book the following automotive service:\n\n" +
+      getListingDetails(item, "services") +
+      "\n\nPlease confirm availability and provide the necessary booking and payment instructions.\n\n" +
+      "Thank you.";
+
+    return createEmailLink(email, subject, body);
+  }
+
+  function getContactEmailLink() {
+    const email = DATA.emails.general;
+
+    const subject = "General Enquiry - Liberty Motors";
+
+    const body =
+      "Hello Liberty Motors,\n\n" +
+      "I would like to make a general enquiry.\n\n" +
+      "My enquiry:\n\n" +
+      "Thank you.";
+
+    return createEmailLink(email, subject, body);
   }
 
   /* HEADER */
@@ -264,9 +360,14 @@
         </div>
 
         <div class="footer-contact">
-          <h4>Get in Touch</h4>
+          <h4>General Enquiries</h4>
           <a href="mailto:${escapeHTML(DATA.emails.general)}">
             ${escapeHTML(DATA.emails.general)}
+          </a>
+
+          <h4>Sales & Payments</h4>
+          <a href="mailto:${escapeHTML(DATA.emails.payments)}">
+            ${escapeHTML(DATA.emails.payments)}
           </a>
         </div>
 
@@ -457,6 +558,24 @@
       >
     `).join("");
 
+    const transactionButton = type === "services"
+      ? `
+        <a
+          class="listing-button"
+          href="${getBookNowLink(item)}"
+        >
+          Book Now
+        </a>
+      `
+      : `
+        <a
+          class="listing-button"
+          href="${getBuyNowLink(item, type)}"
+        >
+          Buy Now
+        </a>
+      `;
+
     pageLayout(
       title,
       getTypeLabel(type) + " Details",
@@ -489,12 +608,18 @@
 
             ${item.status ? `<p><strong>Status:</strong> ${escapeHTML(item.status)}</p>` : ""}
 
-            <a
-              class="listing-button"
-              href="${getEnquiryLink(item, type)}"
-            >
-              Enquire Now
-            </a>
+            <div class="listing-actions">
+
+              <a
+                class="listing-button"
+                href="${getGeneralEnquiryLink(item, type)}"
+              >
+                General Enquiry
+              </a>
+
+              ${transactionButton}
+
+            </div>
 
           </div>
 
@@ -539,36 +664,43 @@
 
     pageLayout(
       "Contact Liberty Motors",
-      "We would love to hear from you.",
+      "Choose the appropriate department to contact us.",
       `
         <div class="contact-grid">
 
           <div class="contact-card">
             <h3>General Enquiries</h3>
+
+            <p>
+              For general questions, vehicle enquiries,
+              parts enquiries and service information.
+            </p>
+
             <a href="mailto:${escapeHTML(emails.general)}">
               ${escapeHTML(emails.general)}
             </a>
+
+            <p>
+              <a
+                class="listing-button"
+                href="${getContactEmailLink()}"
+              >
+                Send General Enquiry
+              </a>
+            </p>
           </div>
 
           <div class="contact-card">
-            <h3>Vehicle Enquiries</h3>
-            <a href="mailto:${escapeHTML(emails.cars)}">
-              ${escapeHTML(emails.cars)}
-            </a>
-          </div>
+            <h3>Sales, Bookings & Payments</h3>
 
-          <div class="contact-card">
-            <h3>Parts Enquiries</h3>
-            <a href="mailto:${escapeHTML(emails.parts)}">
-              ${escapeHTML(emails.parts)}
-            </a>
-          </div>
+            <p>
+              For purchases, service bookings and payment arrangements.
+            </p>
 
-          <div class="contact-card">
-            <h3>Service Enquiries</h3>
-            <a href="mailto:${escapeHTML(emails.services)}">
-              ${escapeHTML(emails.services)}
+            <a href="mailto:${escapeHTML(emails.payments)}">
+              ${escapeHTML(emails.payments)}
             </a>
+
           </div>
 
         </div>
