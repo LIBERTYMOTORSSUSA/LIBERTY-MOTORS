@@ -466,7 +466,7 @@
 
   /* LISTING CARDS */
   
-function renderCard(item, type) {
+  function renderCard(item, type) {
   const slug = getSlug(item);
   const title = getItemName(item);
   const route = type + "/" + slug;
