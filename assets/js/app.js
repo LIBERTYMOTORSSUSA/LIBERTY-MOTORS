@@ -664,6 +664,7 @@ function formatSpecificationLabel(key) {
     return item ? { item, type } : null;
   }
 
+  
   function renderDetailPage(item, type) {
     const title = getItemName(item);
 
@@ -689,12 +690,61 @@ function formatSpecificationLabel(key) {
       `
       : "";
 
-    const galleryHTML = images.map(image => `
+    const galleryHTML = images.map((image, index) => `
       <img
+        class="detail-gallery-image"
+        data-gallery-index="${index}"
         src="${escapeHTML(image)}"
-        alt="${escapeHTML(title)}"
+        alt="${escapeHTML(title)} - Image ${index + 1}"
+        loading="${index === 0 ? "eager" : "lazy"}"
       >
     `).join("");
+
+    const thumbnailHTML = images.length > 1
+      ? `
+        <div class="detail-gallery-thumbnails">
+          ${images.map((image, index) => `
+            <button
+              type="button"
+              class="detail-gallery-thumbnail ${index === 0 ? "is-active" : ""}"
+              data-gallery-thumbnail="${index}"
+              aria-label="View image ${index + 1}"
+              aria-pressed="${index === 0}"
+            >
+              <img
+                src="${escapeHTML(image)}"
+                alt=""
+                loading="lazy"
+              >
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="detail-gallery-controls">
+          <button
+            type="button"
+            class="detail-gallery-arrow"
+            id="gallery-previous"
+            aria-label="Previous image"
+          >
+            &#8592;
+          </button>
+
+          <span class="detail-gallery-counter" id="gallery-counter">
+            1 / ${images.length}
+          </span>
+
+          <button
+            type="button"
+            class="detail-gallery-arrow"
+            id="gallery-next"
+            aria-label="Next image"
+          >
+            &#8594;
+          </button>
+        </div>
+      `
+      : "";
 
     const transactionButton = type === "services"
       ? `
@@ -720,8 +770,9 @@ function formatSpecificationLabel(key) {
       `
         <div class="detail-layout">
 
-          <div class="detail-gallery">
+          <div class="detail-gallery" id="detail-gallery">
             ${galleryHTML}
+            ${thumbnailHTML}
           </div>
 
           <div class="detail-information">
@@ -766,7 +817,74 @@ function formatSpecificationLabel(key) {
         ${specificationHTML}
       `
     );
+
+    // MOBILE AND DESKTOP GALLERY NAVIGATION
+
+    if (images.length > 1) {
+      const gallery = document.getElementById("detail-gallery");
+      const galleryImages = gallery.querySelectorAll(".detail-gallery-image");
+      const thumbnails = gallery.querySelectorAll("[data-gallery-thumbnail]");
+      const previousButton = document.getElementById("gallery-previous");
+      const nextButton = document.getElementById("gallery-next");
+      const counter = document.getElementById("gallery-counter");
+
+      let activeIndex = 0;
+      let touchStartX = 0;
+
+      function showGalleryImage(index) {
+        activeIndex = (index + images.length) % images.length;
+
+        galleryImages.forEach((image, imageIndex) => {
+          image.classList.toggle(
+            "is-active",
+            imageIndex === activeIndex
+          );
+        });
+
+        thumbnails.forEach((thumbnail, thumbnailIndex) => {
+          const isActive = thumbnailIndex === activeIndex;
+
+          thumbnail.classList.toggle("is-active", isActive);
+          thumbnail.setAttribute("aria-pressed", String(isActive));
+        });
+
+        if (counter) {
+          counter.textContent =
+            (activeIndex + 1) + " / " + images.length;
+        }
+      }
+
+      previousButton.addEventListener("click", function () {
+        showGalleryImage(activeIndex - 1);
+      });
+
+      nextButton.addEventListener("click", function () {
+        showGalleryImage(activeIndex + 1);
+      });
+
+      thumbnails.forEach((thumbnail, index) => {
+        thumbnail.addEventListener("click", function () {
+          showGalleryImage(index);
+        });
+      });
+
+      gallery.addEventListener("touchstart", function (event) {
+        touchStartX = event.changedTouches[0].screenX;
+      }, { passive: true });
+
+      gallery.addEventListener("touchend", function (event) {
+        const touchEndX = event.changedTouches[0].screenX;
+        const difference = touchStartX - touchEndX;
+
+        if (Math.abs(difference) > 50) {
+          showGalleryImage(
+            difference > 0 ? activeIndex + 1 : activeIndex - 1
+          );
+        }
+      }, { passive: true });
+    }
   }
+
 
   /* ABOUT PAGE */
 
