@@ -467,50 +467,81 @@
   /* LISTING CARDS */
 
   function renderCard(item, type) {
-    const slug = getSlug(item);
-    const title = getItemName(item);
-    const route = type + "/" + slug;
+  
+function renderCard(item, type) {
+  const slug = getSlug(item);
+  const title = getItemName(item);
+  const route = type + "/" + slug;
 
-    return `
-      <article class="listing-card">
+  const isService = type === "services";
 
-        <a class="listing-image" href="${siteUrl(route)}">
-          <img
-            src="${escapeHTML(getImage(item))}"
-            alt="${escapeHTML(title)}"
-            loading="lazy"
+  const primaryAction = isService
+    ? getBookNowLink(item)
+    : getBuyNowLink(item, type);
+
+  const primaryLabel = isService
+    ? "Book This Service"
+    : "Buy Now";
+
+  return `
+    <article class="listing-card premium-listing-card">
+
+      <a class="listing-image" href="${siteUrl(route)}">
+        <img
+          src="${escapeHTML(getImage(item))}"
+          alt="${escapeHTML(title)}"
+          loading="lazy"
+        >
+      </a>
+
+      <div class="listing-content">
+
+        <span class="listing-type">
+          ${escapeHTML(getTypeLabel(type))}
+        </span>
+
+        <h3>
+          <a href="${siteUrl(route)}">
+            ${escapeHTML(title)}
+          </a>
+        </h3>
+
+        <p class="listing-description">
+          ${escapeHTML(item.description || "")}
+        </p>
+
+        <div class="listing-price">
+          ${formatPrice(item.price)}
+        </div>
+
+        <div class="premium-card-actions">
+
+          <a
+            class="premium-action premium-action-primary"
+            href="${primaryAction}"
           >
-        </a>
+            ${primaryLabel}
+          </a>
 
-        <div class="listing-content">
-
-          <span class="listing-type">
-            ${getTypeLabel(type)}
-          </span>
-
-          <h3>
-            <a href="${siteUrl(route)}">
-              ${escapeHTML(title)}
-            </a>
-          </h3>
-
-          <p class="listing-description">
-            ${escapeHTML(item.description || "")}
-          </p>
-
-          <div class="listing-price">
-            ${formatPrice(item.price)}
-          </div>
-
-          <a class="listing-button" href="${siteUrl(route)}">
-            View Details
+          <a
+            class="premium-action premium-action-secondary"
+            href="${getGeneralEnquiryLink(item, type)}"
+          >
+            General Enquiry
           </a>
 
         </div>
 
-      </article>
-    `;
-  }
+        <a class="premium-details-link" href="${siteUrl(route)}">
+          View Full Details →
+        </a>
+
+      </div>
+
+    </article>
+  `;
+}
+
 
   /* HOMEPAGE FEATURED CONTENT */
 
