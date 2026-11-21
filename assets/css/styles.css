@@ -2135,3 +2135,29 @@ footer .footer-contact a:hover,
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- LIBERTY MOTORS LOGO SIZE ---------- */
+
+.site-header-inner .brand img {
+  width: 68px;
+  height: 68px;
+  max-height: none;
+  object-fit: contain;
+}
+
+.site-header-inner .brand {
+  font-size: 21px;
+  gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .site-header-inner .brand img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .site-header-inner .brand {
+    font-size: 17px;
+    gap: 9px;
+  }
+}
