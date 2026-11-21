@@ -668,7 +668,7 @@
           <div class="specification-grid">
             ${Object.entries(specifications).map(([key, value]) => `
               <div class="specification-item">
-                <strong>${escapeHTML(key)}</strong>
+                <strong>${escapeHTML(formatSpecificationLabel(key))}</strong>
                 <span>${escapeHTML(value)}</span>
               </div>
             `).join("")}
