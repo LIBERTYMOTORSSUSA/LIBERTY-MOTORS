@@ -140,6 +140,32 @@
       services: "Automotive Service"
     };
 
+ function formatSpecificationLabel(key) {
+  const labels = {
+    fuel_type: "Fuel Type",
+    exterior_colour: "Exterior Colour",
+    interior_colour: "Interior Colour",
+    exterior_color: "Exterior Colour",
+    interior_color: "Interior Colour",
+    transmission: "Transmission",
+    condition: "Condition",
+    engine: "Engine",
+    make: "Make",
+    model: "Model"
+  };
+
+  const normalised = String(key).toLowerCase().trim();
+
+  if (labels[normalised]) {
+    return labels[normalised];
+  }
+
+  return normalised
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+       
     return labels[type] || "Listing";
   }
 
