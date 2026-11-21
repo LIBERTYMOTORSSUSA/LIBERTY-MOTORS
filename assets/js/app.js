@@ -465,8 +465,6 @@
   }
 
   /* LISTING CARDS */
-
-  function renderCard(item, type) {
   
 function renderCard(item, type) {
   const slug = getSlug(item);
