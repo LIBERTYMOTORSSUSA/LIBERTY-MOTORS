@@ -9,7 +9,7 @@ window.LIBERTY_DATA = {
     name: "Liberty Motors",
     tagline: "Driven by Quality. Defined by Trust.",
     description: "Your destination for quality vehicles, automotive parts and professional automotive services.",
-    logo: "assets/images/logo.png"
+    logo: "assets/images/liberty-motors-logo.png"
   },
 
   emails: {
