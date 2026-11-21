@@ -409,7 +409,7 @@ function formatSpecificationLabel(key) {
 
         <a class="brand" href="${siteUrl("")}">
           <img
-            src="${escapeHTML(DATA.business.logo)}"
+            src="${escapeHTML(siteUrl(DATA.business.logo))}"
             alt="${escapeHTML(DATA.business.name)}"
           >
           <span>${escapeHTML(DATA.business.name)}</span>
