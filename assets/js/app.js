@@ -133,14 +133,18 @@
       "assets/images/vehicle-placeholder.jpg";
   }
 
-  function getTypeLabel(type) {
-    const labels = {
-      cars: "Vehicle",
-      parts: "Automotive Part",
-      services: "Automotive Service"
-    };
+  
+ function getTypeLabel(type) {
+  const labels = {
+    cars: "Vehicle",
+    parts: "Automotive Part",
+    services: "Automotive Service"
+  };
 
- function formatSpecificationLabel(key) {
+  return labels[type] || "Listing";
+}
+
+function formatSpecificationLabel(key) {
   const labels = {
     fuel_type: "Fuel Type",
     exterior_colour: "Exterior Colour",
@@ -165,9 +169,6 @@
     .replace(/\b\w/g, letter => letter.toUpperCase());
 }
 
-       
-    return labels[type] || "Listing";
-  }
 
   function getArray(type) {
     return Array.isArray(DATA[type]) ? DATA[type] : [];
