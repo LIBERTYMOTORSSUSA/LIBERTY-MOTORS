@@ -89,17 +89,28 @@
     });
   }
 
+  
   function formatPrice(price) {
-    if (price === undefined || price === null || price === "") {
-      return "Contact for price";
-    }
-
-    if (typeof price === "number") {
-      return "$" + price.toLocaleString("en-US");
-    }
-
-    return escapeHTML(price);
+  if (price === undefined || price === null || price === "") {
+    return "Contact for price";
   }
+
+  const numericPrice = Number(
+    String(price).replace(/[$,\s]/g, "")
+  );
+
+  if (Number.isFinite(numericPrice)) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(numericPrice);
+  }
+
+  return escapeHTML(price);
+}
+
 
   function getEmailPrice(price) {
     if (price === undefined || price === null || price === "") {
