@@ -854,6 +854,8 @@ function formatSpecificationLabel(key) {
         }
       }
 
+     showGalleryImage(0);  
+       
       previousButton.addEventListener("click", function () {
         showGalleryImage(activeIndex - 1);
       });
