@@ -322,51 +322,17 @@ function formatSpecificationLabel(key) {
     return createEmailLink(email, subject, body);
   }
 
-  function getBuyNowLink(item, type) {
-    const email = DATA.emails.payments;
+  function getCheckoutLink(item, type) {
+  return siteUrl("checkout/" + type + "/" + getSlug(item));
+}
 
-    const subject =
-      "Purchase Request - " + getItemName(item);
+function getBuyNowLink(item, type) {
+  return getCheckoutLink(item, type);
+}
 
-    const body =
-      "Hello Liberty Motors Sales Team,\n\n" +
-      "I would like to proceed with purchasing the following item:\n\n" +
-      getListingDetails(item, type) +
-      "\n\nPlease confirm availability and provide the necessary payment instructions so I can proceed with the purchase.\n\n" +
-      "Thank you.";
-
-    return createEmailLink(email, subject, body);
-  }
-
-  function getBookNowLink(item) {
-    const email = DATA.emails.payments;
-
-    const subject =
-      "Service Booking Request - " + getItemName(item);
-
-    const body =
-      "Hello Liberty Motors Sales Team,\n\n" +
-      "I would like to book the following automotive service:\n\n" +
-      getListingDetails(item, "services") +
-      "\n\nPlease confirm availability and provide the necessary booking and payment instructions.\n\n" +
-      "Thank you.";
-
-    return createEmailLink(email, subject, body);
-  }
-
-  function getContactEmailLink() {
-    const email = DATA.emails.general;
-
-    const subject = "General Enquiry - Liberty Motors";
-
-    const body =
-      "Hello Liberty Motors,\n\n" +
-      "I would like to make a general enquiry.\n\n" +
-      "My enquiry:\n\n" +
-      "Thank you.";
-
-    return createEmailLink(email, subject, body);
-  }
+function getBookNowLink(item) {
+  return getCheckoutLink(item, "services");
+}
 
   /* HEADER */
 
@@ -966,6 +932,226 @@ function formatSpecificationLabel(key) {
     );
   }
 
+   
+/* CHECKOUT PAGE */
+
+function renderCheckoutPage(item, type) {
+  const isService = type === "services";
+  const isPart = type === "parts";
+
+  const title = isService
+    ? "Service Booking"
+    : "Complete Your Purchase";
+
+  const contactFields = `
+    <div class="checkout-field">
+      <label for="checkout-name">Full Name *</label>
+      <input id="checkout-name" name="name" type="text"
+        placeholder="Your full name" required>
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-email">Email Address *</label>
+      <input id="checkout-email" name="email" type="email"
+        placeholder="Your email address" required>
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-phone">Phone Number</label>
+      <input id="checkout-phone" name="phone" type="tel"
+        placeholder="Your phone number">
+    </div>
+  `;
+
+  const deliveryFields = !isService ? `
+    <h3>Delivery Information</h3>
+
+    <div class="checkout-field">
+      <label for="checkout-address">Delivery Address</label>
+      <input id="checkout-address" name="address" type="text"
+        placeholder="Street address">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-city">City</label>
+      <input id="checkout-city" name="city" type="text"
+        placeholder="City">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-state">State</label>
+      <input id="checkout-state" name="state" type="text"
+        placeholder="State">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-zip">ZIP / Postal Code</label>
+      <input id="checkout-zip" name="zip" type="text"
+        placeholder="ZIP or postal code">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-country">Country</label>
+      <input id="checkout-country" name="country" type="text"
+        placeholder="Country">
+    </div>
+  ` : `
+    <h3>Service Information</h3>
+
+    <div class="checkout-field">
+      <label for="checkout-vehicle">Vehicle Make and Model</label>
+      <input id="checkout-vehicle" name="vehicle" type="text"
+        placeholder="e.g. Toyota Camry 2022">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-location">Service Location</label>
+      <input id="checkout-location" name="location" type="text"
+        placeholder="Where should the service take place?">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-date">Preferred Appointment Date</label>
+      <input id="checkout-date" name="date" type="date">
+    </div>
+  `;
+
+  const partFields = isPart ? `
+    <div class="checkout-field">
+      <label for="checkout-quantity">Quantity</label>
+      <input id="checkout-quantity" name="quantity"
+        type="number" min="1" value="1">
+    </div>
+
+    <div class="checkout-field">
+      <label for="checkout-compatibility">Vehicle Make, Model and Year</label>
+      <input id="checkout-compatibility" name="compatibility"
+        type="text" placeholder="Vehicle this part is for">
+    </div>
+  ` : "";
+
+  pageLayout(
+    title,
+    "Provide your details to continue with Liberty Motors.",
+    `
+      <div class="checkout-container">
+
+        <div class="checkout-summary">
+          <span class="listing-type">
+            ${escapeHTML(getTypeLabel(type))}
+          </span>
+
+          <h2>${escapeHTML(getItemName(item))}</h2>
+
+          <p class="checkout-price">
+            ${formatPrice(item.price)}
+          </p>
+
+          <p>
+            ${escapeHTML(item.description || "")}
+          </p>
+        </div>
+
+        <form id="liberty-checkout-form" class="checkout-form">
+
+          <h3>Your Contact Information</h3>
+
+          ${contactFields}
+
+          ${deliveryFields}
+
+          ${partFields}
+
+          <div class="checkout-field">
+            <label for="checkout-notes">
+              Additional Instructions (Optional)
+            </label>
+            <textarea id="checkout-notes" name="notes"
+              rows="4"
+              placeholder="Anything else we should know?"></textarea>
+          </div>
+
+          <p class="checkout-notice">
+            Your details will be prepared in an email to our sales team.
+            We will confirm availability and provide payment instructions.
+          </p>
+
+          <button type="submit" class="listing-button checkout-submit">
+            Proceed to Payment
+          </button>
+
+        </form>
+
+      </div>
+    `
+  );
+
+  const form = document.getElementById("liberty-checkout-form");
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+
+    const customerDetails = [
+      "CUSTOMER INFORMATION",
+      "Full Name: " + formData.get("name"),
+      "Email: " + formData.get("email"),
+      "Phone: " + (formData.get("phone") || "Not provided")
+    ];
+
+    const optionalFields = isService
+      ? [
+          ["Vehicle", "vehicle"],
+          ["Service Location", "location"],
+          ["Preferred Appointment Date", "date"]
+        ]
+      : [
+          ["Delivery Address", "address"],
+          ["City", "city"],
+          ["State", "state"],
+          ["ZIP / Postal Code", "zip"],
+          ["Country", "country"],
+          ["Quantity", "quantity"],
+          ["Vehicle Compatibility", "compatibility"]
+        ];
+
+    optionalFields.forEach(([label, field]) => {
+      const value = formData.get(field);
+
+      if (value) {
+        customerDetails.push(label + ": " + value);
+      }
+    });
+
+    customerDetails.push(
+      "Additional Instructions: " +
+      (formData.get("notes") || "None")
+    );
+
+    const subject = (isService
+      ? "Service Booking Request - "
+      : "Purchase Request - ") + getItemName(item);
+
+    const body =
+      "Hello Liberty Motors Sales Team,\n\n" +
+      (isService
+        ? "I would like to book the following service:\n\n"
+        : "I would like to proceed with this purchase:\n\n") +
+      getListingDetails(item, type) +
+      "\n\n" +
+      customerDetails.join("\n") +
+      "\n\nPlease confirm availability and provide the next steps" +
+      " for completing this transaction.\n\nThank you.";
+
+    window.location.href = createEmailLink(
+      DATA.emails.payments,
+      subject,
+      body
+    );
+  });
+}
+
   /* ROUTING */
 
   function renderRoute() {
@@ -1072,6 +1258,27 @@ function formatSpecificationLabel(key) {
       renderContactPage();
       return;
     }
+
+     if (path.startsWith("checkout/")) {
+  const checkoutPath = path.split("/");
+  const type = checkoutPath[1];
+  const slug = checkoutPath[2];
+
+  if (
+    checkoutPath.length === 3 &&
+    ["cars", "parts", "services"].includes(type)
+  ) {
+    const item = getArray(type).find(entry =>
+      getSlug(entry).toLowerCase() === slug &&
+      entry.is_published !== false
+    );
+
+    if (item) {
+      renderCheckoutPage(item, type);
+      return;
+    }
+  }
+     }
 
     const result = findListing(path);
 
