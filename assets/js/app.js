@@ -1302,32 +1302,29 @@ function renderCheckoutPage(item, type) {
 
   /* INITIALISE WEBSITE */
 
-  async function initialiseWebsite() {
-    renderHeader();
-    renderFooter();
+  
+async function initialiseWebsite() {
+  renderHeader();
+  renderFooter();
 
-    // Preserve the original homepage HTML.
-    // Do not clear the #app container here.
+  // Display the page immediately.
+  renderRoute();
 
-    try {
-      await loadInventory();
-      inventoryError = false;
-    } catch (error) {
-      inventoryError = true;
-      console.error(
-        "Liberty Motors: Inventory loading failed.",
-        error
-      );
-    }
-
-    // Render the correct route only after inventory loading.
-    // On the homepage, this updates only the featured sections.
-    renderRoute();
-
-    console.log("Liberty Motors website engine loaded.");
-    console.log("Current route:", currentPath);
+  // Load inventory in the background.
+  try {
+    await loadInventory();
+    inventoryError = false;
+  } catch (error) {
+    inventoryError = true;
+    console.error(
+      "Liberty Motors: Inventory loading failed.",
+      error
+    );
   }
 
-  initialiseWebsite();
+  // Refresh the page with the loaded inventory.
+  renderRoute();
 
-})();
+  console.log("Liberty Motors website engine loaded.");
+  console.log("Current route:", currentPath);
+}
