@@ -1328,3 +1328,6 @@ async function initialiseWebsite() {
   console.log("Liberty Motors website engine loaded.");
   console.log("Current route:", currentPath);
 }
+     initialiseWebsite();
+
+})();
