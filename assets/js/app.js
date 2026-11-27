@@ -270,6 +270,14 @@ function formatSpecificationLabel(key) {
       "&body=" + encodeURIComponent(body);
   }
 
+   function getContactEmailLink() {
+  return createEmailLink(
+    DATA.emails.general,
+    "General Enquiry - Liberty Motors",
+    "Hello Liberty Motors,\n\nI would like to make a general enquiry.\n\nThank you."
+  );
+   }
+   
   function getListingDetails(item, type) {
     const details = [
       "Listing: " + getItemName(item),
