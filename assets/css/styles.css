@@ -2295,3 +2295,255 @@ footer .footer-contact a:hover,
     height: 58px;
   }
 }
+
+/* =========================================================
+   LIBERTY MOTORS — PREMIUM CHECKOUT & ORDER DETAILS
+   Navy • Gold • White
+   ========================================================= */
+
+/* MAIN CHECKOUT LAYOUT */
+
+.checkout-container {
+  width: min(1100px, 94%);
+  margin: 45px auto 80px;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.4fr);
+  gap: 30px;
+  align-items: start;
+}
+
+/* ORDER SUMMARY */
+
+.checkout-summary {
+  position: sticky;
+  top: 25px;
+  padding: 32px;
+  background: var(--navy);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  color: var(--white);
+  box-shadow: 0 12px 30px rgba(11, 20, 32, 0.12);
+}
+
+.checkout-summary .listing-type {
+  display: inline-block;
+  color: var(--gold-light);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.checkout-summary h2 {
+  color: var(--white);
+  font-size: 27px;
+  line-height: 1.35;
+  margin-bottom: 20px;
+}
+
+.checkout-summary .checkout-price {
+  color: var(--gold-light);
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.checkout-summary p:not(.checkout-price) {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* CHECKOUT FORM CARD */
+
+.checkout-form {
+  min-width: 0;
+  padding: 35px;
+  background: var(--white);
+  border: 1px solid #e1e5e9;
+  border-top: 4px solid var(--gold);
+  border-radius: 6px;
+  box-shadow: 0 8px 30px rgba(11, 20, 32, 0.06);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.checkout-form h3 {
+  grid-column: 1 / -1;
+  color: var(--navy);
+  font-size: 21px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-top: 10px;
+}
+
+.checkout-form h3:first-child {
+  margin-top: 0;
+}
+
+/* FORM FIELDS */
+
+.checkout-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkout-field label {
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.checkout-field input,
+.checkout-field textarea,
+.checkout-field select {
+  width: 100%;
+  min-width: 0;
+  padding: 14px 15px;
+  background: #f8f9fa;
+  border: 1px solid #dce1e6;
+  border-radius: 4px;
+  color: var(--dark);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              background 0.2s ease;
+}
+
+.checkout-field input {
+  min-height: 49px;
+}
+
+.checkout-field textarea {
+  min-height: 115px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.checkout-field input:focus,
+.checkout-field textarea:focus,
+.checkout-field select:focus {
+  background: var(--white);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(197, 164, 109, 0.14);
+}
+
+.checkout-field input::placeholder,
+.checkout-field textarea::placeholder {
+  color: #9aa1aa;
+  font-size: 13px;
+}
+
+/* ADDITIONAL INSTRUCTIONS */
+
+.checkout-form .checkout-field:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+/* CHECKOUT NOTICE */
+
+.checkout-notice {
+  grid-column: 1 / -1;
+  padding: 15px 17px;
+  background: #f8f5ee;
+  border-left: 3px solid var(--gold);
+  color: #626b76;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* PROCEED TO PAYMENT */
+
+.checkout-submit {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 55px;
+  padding: 15px 22px;
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.checkout-submit:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* TABLET */
+
+@media (max-width: 850px) {
+  .checkout-container {
+    grid-template-columns: 1fr;
+    max-width: 680px;
+    gap: 22px;
+  }
+
+  .checkout-summary {
+    position: static;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .checkout-container {
+    width: 92%;
+    margin: 25px auto 55px;
+    gap: 18px;
+  }
+
+  .checkout-summary {
+    padding: 24px 21px;
+  }
+
+  .checkout-summary h2 {
+    font-size: 23px;
+  }
+
+  .checkout-summary .checkout-price {
+    font-size: 23px;
+  }
+
+  .checkout-form {
+    grid-template-columns: 1fr;
+    gap: 17px;
+    padding: 23px 18px;
+  }
+
+  .checkout-form h3,
+  .checkout-form .checkout-field:has(textarea),
+  .checkout-notice,
+  .checkout-submit {
+    grid-column: 1;
+  }
+
+  .checkout-form h3 {
+    font-size: 19px;
+  }
+
+  .checkout-field input,
+  .checkout-field textarea,
+  .checkout-field select {
+    font-size: 16px;
+  }
+
+  .checkout-submit {
+    min-height: 53px;
+  }
+}
+
